@@ -1,0 +1,61 @@
+# Blok keluaran yang tercetak di Bab 13 (bab13-koefisien.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab13_*.py.
+
+=== blok 1 ===
+n = 2000, penyakit = 431 (0.215)
+    usia    imt  perokok wilayah  penyakit
+0  33.30  21.99        1    desa         0
+1  37.82  23.31        1    kota         0
+2  62.42  15.52        0    kota         0
+
+=== blok 2 ===
+(1) odds ratio usia:
+    per tahun        : 1.067 [1.057, 1.077]
+    per 10 tahun     : 1.913 [1.742, 2.100]
+    per SB (14.3 th) : 2.534 [2.216, 2.897]
+
+=== blok 3 ===
+(2) rujukan wilayah:
+    rujukan kota: desa +0.6568, pinggiran +0.5157
+    rujukan desa: kota -0.6568, pinggiran -0.1411
+    beda peluang terbesar kedua model < 1e-10: True
+
+=== blok 4 ===
+    one-hot penuh + intersep: galat baku intersep > 1e6: True
+    intersep + w_kota = -8.5500 (rujukan kota: -8.5500)
+
+=== blok 5 ===
+(3) interaksi usia x perokok:
+    usia mentah   : perokok -0.1058, interaksi +0.0181
+    usia - 55     : perokok +0.8891, interaksi +0.0181
+    OR perokok pada usia 40: 1.855
+    OR perokok pada usia 55: 2.433
+    OR perokok pada usia 70: 3.191
+
+=== blok 6 ===
+(1) efek marginal rata-rata:
+    usia: kita 0.00899, sm 0.00899, w/4 = 0.01622
+    imt : kita 0.01474, sm 0.01474, w/4 = 0.02658
+    perokok: kita 0.15020, sm 0.15020
+
+=== blok 7 ===
+(2) perokok:
+    odds ratio          2.698
+    rasio risiko rata2  1.885 (p1 = 0.320, p0 = 0.170)
+
+=== blok 8 ===
+(3) percobaan acak, n = 200000, log-OR sebenarnya 1.0:
+    korelasi t dan z      -0.0033
+    log-OR tanpa z        0.6041
+    log-OR dengan z       1.0046
+
+=== blok 9 ===
+(1) pengacau, log-OR paparan sebenarnya -1.0:
+    tanpa z: +0.9685, dengan z: -1.0446
+
+=== blok 10 ===
+(2) multikolinearitas, n = 500, w = (1, 1):
+    rho = 0.00, VIF  1.0: w1 = 0.765 (SE 0.112)
+                         w2 = 0.937 (SE 0.120)
+    rho = 0.95, VIF 10.2: w1 = 0.822 (SE 0.369)
+                         w2 = 1.232 (SE 0.372)

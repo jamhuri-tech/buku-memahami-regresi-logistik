@@ -1220,6 +1220,116 @@ def bab12_sebaran():
     simpan(fig, "bab12-sebaran")
 
 
+
+# ============================ Bab 13 =================================
+
+def bab13_interaksi():
+    import warnings
+    import statsmodels.formula.api as smf
+    from scipy.special import logit
+    from bab13_data import data_pasien
+    warnings.simplefilter("ignore")
+    d = data_pasien()
+    h = smf.logit("penyakit ~ I(usia - 55) * perokok + "
+                  "C(wilayah, Treatment('kota')) + imt", d).fit(disp=0)
+    usia = np.linspace(30, 80, 200)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.0))
+    for rokok, w, nama in ((0, BIRU, "bukan perokok"),
+                           (1, MERAH, "perokok")):
+        baru = {"usia": usia, "perokok": rokok, "wilayah": "kota",
+                "imt": 26.0}
+        import pandas as pd
+        p = h.predict(pd.DataFrame(baru))
+        a.plot(usia, p, color=w, lw=1.1, label=nama)
+        b.plot(usia, logit(p), color=w, lw=1.1)
+    a.set_xlabel("usia (tahun)")
+    a.set_title("peluang penyakit")
+    a.legend(fontsize=5.5, loc="upper left")
+    b.set_xlabel("usia (tahun)")
+    b.set_title("log-odds penyakit")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab13-interaksi")
+
+
+def bab13_marginal():
+    import warnings
+    import statsmodels.formula.api as smf
+    from bab13_data import data_pasien
+    warnings.simplefilter("ignore")
+    d = data_pasien()
+    h = smf.logit("penyakit ~ usia + perokok + "
+                  "C(wilayah, Treatment('kota')) + imt", d).fit(disp=0)
+    p = h.predict(d)
+    me = h.params["usia"] * p * (1 - p)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.hist(me, bins=40, color=BIRU_MUDA, edgecolor=BIRU, lw=0.4)
+    ax.axvline(me.mean(), color=MERAH, lw=1.0, label="rata-rata (AME)")
+    ax.axvline(h.params["usia"] / 4, color=HIJAU, lw=1.0, ls="--",
+               label="batas $w/4$")
+    ax.set_xlabel("perubahan peluang per tahun usia, per pasien")
+    ax.set_ylabel("banyak pasien")
+    ax.legend(fontsize=5.5, loc="upper left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab13-marginal")
+
+
+def bab13_orrr():
+    p0 = np.linspace(0.005, 0.95, 400)
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    for OR, w in ((1.5, HIJAU), (2.7, MERAH), (5.0, BIRU)):
+        odds1 = OR * p0 / (1 - p0)
+        p1 = odds1 / (1 + odds1)
+        ax.plot(p0, p1 / p0, color=w, lw=1.1,
+                label="OR $= " + f"{OR:g}".replace(".", "{,}") + "$")
+        ax.axhline(OR, color=w, lw=0.4, ls=":")
+    ax.axvline(0.17, color=ABU, lw=0.5, ls="--")
+    ax.set_xlabel("peluang dasar $p_0$")
+    ax.set_ylabel("rasio risiko $p_1/p_0$")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab13-orrr")
+
+
+def bab13_simpson():
+    from scipy.special import expit
+    from bab04_data import BENIH
+    rng = np.random.default_rng(BENIH)
+    n = 20_000
+    z = rng.normal(size=n)
+    x = (rng.random(n) < expit(2 * z)).astype(int)
+    y = (rng.random(n) < expit(-1 - 1.0 * x + 2 * z)).astype(int)
+    tepi = np.quantile(z, np.linspace(0, 1, 6))
+    kel = np.clip(np.digitize(z, tepi[1:-1]), 0, 4)
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    lebar = 0.35
+    for i in range(5):
+        for xx, w, g in ((0, BIRU, -1), (1, MERAH, 1)):
+            m = (kel == i) & (x == xx)
+            ax.bar(i + g * lebar / 2, y[m].mean(), lebar, color=w,
+                   alpha=0.85)
+    for xx, w in ((0, BIRU), (1, MERAH)):
+        ax.axhline(y[x == xx].mean(), color=w, lw=0.9, ls="--")
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Patch(color=BIRU, label="$x = 0$"),
+                       Patch(color=MERAH, label="$x = 1$"),
+                       Line2D([], [], color=ABU, ls="--", lw=0.9,
+                              label="seluruh data (tanpa $z$)")],
+              fontsize=5.3, loc="upper left")
+    ax.set_xticks(range(5))
+    ax.set_xticklabels(["$z$ terendah", "2", "3", "4", "$z$ tertinggi"],
+                       fontsize=6)
+    kunci_label(ax, "x")
+    ax.set_ylabel("proporsi $y = 1$")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab13-simpson")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
