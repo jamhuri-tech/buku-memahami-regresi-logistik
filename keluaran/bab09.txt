@@ -19,7 +19,7 @@ statsmodels Logit (Newton): 6 iterasi, b = -3.5903, w = 0.6393
 === blok 3 ===
 Newton murni dari (b, w) = (10, -2):
   iterasi 1: b = -241.32, w = 48.47
-  iterasi 2: |theta| > 1e15: True
+  iterasi 2: |theta| > 1e15 atau H singular (meledak): True
 
 === blok 4 ===
 teredam dari (10, -2): 6 iterasi, b = -3.5903, w = 0.6393

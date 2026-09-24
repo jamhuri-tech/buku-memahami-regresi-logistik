@@ -49,13 +49,17 @@ if __name__ == "__main__":
               f"{log_loss(b, Xp, y):.12f}  {teks}")
     print("Newton murni dari (b, w) = (10, -2):")
     theta = np.array([10.0, -2.0])
-    for k in range(2):
+    theta = theta - np.linalg.solve(hessian(theta, Xm, y),
+                                    gradien(theta, Xm, y))
+    print(f"  iterasi 1: b = {theta[0]:.2f}, w = {theta[1]:.2f}")
+    try:
         theta = theta - np.linalg.solve(hessian(theta, Xm, y),
                                         gradien(theta, Xm, y))
-        if k == 0:
-            print(f"  iterasi 1: b = {theta[0]:.2f}, w = {theta[1]:.2f}")
-    print(f"  iterasi 2: |theta| > 1e15: "
-          f"{np.linalg.norm(theta) > 1e15}")
+        meledak = np.linalg.norm(theta) > 1e15
+    except np.linalg.LinAlgError:          # Hessian tepat singular
+        meledak = True
+    print(f"  iterasi 2: |theta| > 1e15 atau H singular "
+          f"(meledak): {meledak}")
     theta, k = newton_teredam(Xm, y, np.array([10.0, -2.0]))
     print(f"teredam dari (10, -2): {k} iterasi, "
           f"b = {theta[0]:.4f}, w = {theta[1]:.4f}")
