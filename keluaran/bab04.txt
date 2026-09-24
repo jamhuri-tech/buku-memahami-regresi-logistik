@@ -1,0 +1,89 @@
+# Blok keluaran yang tercetak di Bab 4 (bab04-logit.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab04_*.py.
+
+=== blok 1 ===
+(1) nilai di beberapa titik:
+    sigma(-4) = 0.0180
+    sigma(-2) = 0.1192
+    sigma(-1) = 0.2689
+    sigma(+0) = 0.5000
+    sigma(+1) = 0.7311
+    sigma(+2) = 0.8808
+    sigma(+4) = 0.9820
+
+=== blok 2 ===
+(2) maks |sigma(-z) - (1 - sigma(z))| = 1.6e-16
+(3) maks |beda hingga - sigma(1-sigma)| = 1.4e-11
+    turunan terbesar 0.2500 di z = 0.0
+    z = 0.5: sigma = 0.6225, 1/2 + z/4 = 0.6250
+    z = 1.0: sigma = 0.7311, 1/2 + z/4 = 0.7500
+    z = 2.0: sigma = 0.8808, 1/2 + z/4 = 1.0000
+
+=== blok 3 ===
+(4) rumus polos lawan rumus stabil:
+    polos(-720)  = 0.0, peringatan: RuntimeWarning
+    stabil(-720) = 2.032e-313
+    expit(-720)  = 0.000e+00
+    maks |sigmoid - expit| = 1.1e-16
+
+=== blok 4 ===
+(5) peluang kelas 0 untuk z = 40:
+    1 - sigma(40) = 0.000e+00
+    sigma(-40)    = 4.248e-18
+
+=== blok 5 ===
+   p     odds   log-odds
+ 0.01    0.010    -4.595
+ 0.10    0.111    -2.197
+ 0.20    0.250    -1.386
+ 0.25    0.333    -1.099
+ 0.50    1.000    +0.000
+ 0.75    3.000    +1.099
+ 0.80    4.000    +1.386
+ 0.90    9.000    +2.197
+ 0.99   99.000    +4.595
+
+=== blok 6 ===
+maks |sigma(logit(p)) - p| = 1.1e-16
+maks |logit(sigma(z)) - z| (|z| <= 30) = 1.0e-03
+logit(1 - p) + logit(p) = 1.3e-15
+
+=== blok 7 ===
+jam  : 1 2 2 3 4 4 5 5 6 6 7 8 8 9 10 11
+lulus: 0 0 0 0 1 0 0 1 0 1 1 1 0 1 1 1
+
+=== blok 8 ===
+statsmodels : b = -3.5903, w = 0.6393
+scikit-learn: b = -3.5903, w = 0.6393
+
+=== blok 9 ===
+peluang lulus tanpa belajar (x = 0): sigma(b) = 0.0268
+
+=== blok 10 ===
+odds ratio per jam: exp(w) = 1.8952
+titik setengah: x = -b/w = 5.616 jam
+kemiringan di sana: w/4 = 0.1598 per jam
+
+=== blok 11 ===
+  x -> x+1   p(x)    p(x+1)  beda p  odds ratio
+  1 -> 2    0.0497  0.0902  0.0405   1.8952
+  5 -> 6    0.4028  0.5611  0.1583   1.8952
+ 10 -> 11   0.9428  0.9690  0.0262   1.8952
+
+=== blok 12 ===
+dua peubah: n = 200, kelas 1 = 112
+
+=== blok 13 ===
+(1) dua kelas normal, kovarians sama, pi1 = 0.3
+    rumus   : w = (1.3333, 1.3333), b = -3.5140
+    taksiran: w = (1.3264, 1.3409), b = -3.5065
+
+=== blok 14 ===
+(2) galat logistik: w = 1.4990, b = -0.4977
+(2) galat normal  : w = 2.6240, b = -0.8730
+
+=== blok 15 ===
+(3) c = 1.0  : maks |sigma(c z) - Phi(z)| = 0.1174
+(3) c = 1.6  : maks |sigma(c z) - Phi(z)| = 0.0173
+(3) c = 1.702: maks |sigma(c z) - Phi(z)| = 0.0095
+    rasio simpangan baku logistik/normal = 1.8138
