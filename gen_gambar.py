@@ -574,6 +574,119 @@ def bab06_kolinear():
     simpan(fig, "bab06-kolinear")
 
 
+
+# ============================ Bab 7 ==================================
+
+def bab07_terpisah():
+    from scipy.special import expit
+    from bab06_turunan import log_loss, rancang
+    from bab07_data import jam_terpisah
+    x, y = jam_terpisah()
+    xx = np.linspace(0, 12, 400)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 1.95))
+    a.scatter(x, y, s=8, zorder=3, color=np.where(y == 1, BIRU, JINGGA))
+    for t, w in zip((1, 2, 5, 20), (ABU_GARIS, ABU, HIJAU, MERAH)):
+        a.plot(xx, expit(t * (xx - 5.5)), color=w, lw=1.0,
+               label=f"$t = {t}$")
+    a.set_xlabel("jam belajar")
+    a.set_ylabel("peluang lulus")
+    a.set_title(r"$\sigma(t\,(x - 5{,}5))$")
+    a.legend(fontsize=5.5, loc="lower right")
+    X = rancang(x)
+    t = np.linspace(0.2, 40, 300)
+    L = [log_loss(s * np.array([-5.5, 1.0]), X, y) for s in t]
+    b.semilogy(t, L, color=BIRU, lw=1.1)
+    b.set_xlabel("$t$")
+    b.set_title("log-loss sepanjang sinar")
+    kunci_label(b, "y")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab07-terpisah")
+
+
+def bab07_arah():
+    from bab07_arah import jalankan_gd, margin_maksimum
+    from bab07_data import gumpalan_terpisah
+    X, y = gumpalan_terpisah()
+    svm = margin_maksimum(X, y)
+    catat = jalankan_gd(X, y)
+    fig, ax = plt.subplots(figsize=(3.6, 2.7))
+    ax.scatter(*X[y == 1].T, s=7, color=BIRU, zorder=3)
+    ax.scatter(*X[y == 0].T, s=8, facecolors="none", edgecolors=JINGGA,
+               lw=0.6, zorder=3)
+    g = np.array([-3.5, 3.5])
+    for c, w, gaya in ((0, HIJAU, "-"), (1, HIJAU, ":"), (-1, HIJAU, ":")):
+        ax.plot(g, (c - svm[0] - svm[1] * g) / svm[2], color=w, lw=1.1,
+                ls=gaya)
+    for k, w in ((10, ABU_GARIS), (100, ABU), (10**4, MERAH)):
+        th = catat[k]
+        ax.plot(g, (-th[0] - th[1] * g) / th[2], color=w, lw=0.8,
+                ls="--", label=f"GD, $t = {k:g}$")
+    ax.plot([], [], color=HIJAU, lw=1.1, label="margin maksimum")
+    ax.set_xlim(-3.5, 3.5)
+    ax.set_ylim(-2.5, 2.5)
+    ax.set_aspect("equal")
+    ax.set_xlabel("$x_1$")
+    ax.set_ylabel("$x_2$")
+    ax.legend(fontsize=5.2, loc="lower right", framealpha=0.9,
+              frameon=True, edgecolor="none")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab07-arah")
+
+
+def bab07_laju():
+    from bab07_arah import LANGKAH, jalankan_gd, margin_maksimum
+    from bab07_data import gumpalan_terpisah
+    X, y = gumpalan_terpisah()
+    svm = margin_maksimum(X, y)
+    u = svm / np.linalg.norm(svm)
+    catat = jalankan_gd(X, y)
+    k = np.array(sorted(catat))
+    nr = np.array([np.linalg.norm(catat[i]) for i in k])
+    sudut = np.degrees(np.arccos(np.minimum(1, [catat[i] @ u / r
+                                                for i, r in zip(k, nr)])))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 1.95))
+    a.semilogx(k, nr, "o-", ms=2, lw=0.9, color=BIRU,
+               label=r"$\|\theta(t)\|$")
+    tt = np.geomspace(1e3, 1e6, 50)
+    a.semilogx(tt, nr[-1] + np.linalg.norm(svm) * np.log(tt / k[-1]),
+               color=MERAH, lw=0.8, ls="--",
+               label=r"kemiringan $\|\theta_{\mathrm{svm}}\|$")
+    a.set_xlabel("langkah $t$")
+    a.set_title("norma parameter")
+    a.legend(fontsize=5.5, loc="upper left")
+    kunci_label(a, "x")
+    b.semilogx(k, sudut, "o-", ms=2, lw=0.9, color=HIJAU)
+    b.set_xlabel("langkah $t$")
+    b.set_title("sudut ke arah margin maksimum (derajat)")
+    kunci_label(b, "x")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab07-laju")
+
+
+def bab07_cover():
+    from bab07_deteksi import peluang_cover, percobaan_cover
+    n = 60
+    d = np.arange(1, 60)
+    teori = [peluang_cover(n, k + 1) for k in d]
+    empiris = percobaan_cover(n)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.plot((d + 1) / n, teori, color=BIRU, lw=1.1, label="rumus Cover")
+    ax.plot([(k + 1) / n for k in empiris], list(empiris.values()), "o",
+            ms=3, color=MERAH, label="program linear, 200 ulangan")
+    ax.axvline(0.5, color=ABU_GARIS, lw=0.5, ls="--")
+    ax.set_xlabel("$(d + 1)/n$")
+    ax.set_ylabel("peluang terpisah")
+    ax.legend(fontsize=5.5, loc="upper left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab07-cover")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
