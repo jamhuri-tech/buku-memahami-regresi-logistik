@@ -1330,6 +1330,133 @@ def bab13_simpson():
     simpan(fig, "bab13-simpson")
 
 
+
+# ============================ Bab 14 =================================
+
+def _kontur_model(ax, model, X, y, rentang, peluang=None):
+    g = np.linspace(*rentang, 250)
+    G1, G2 = np.meshgrid(g, g)
+    P = model(np.column_stack([G1.ravel(), G2.ravel()])).reshape(G1.shape)
+    ax.contourf(G1, G2, P, levels=[0, .25, .5, .75, 1],
+                colors=[JINGGA_MUDA, "#FEF6EE", "#F6F8FC", BIRU_MUDA])
+    ax.contour(G1, G2, P, levels=[.5], colors=HIJAU, linewidths=1.0)
+    ax.scatter(*X[y == 1].T, s=3, color=BIRU, lw=0)
+    ax.scatter(*X[y == 0].T, s=4, facecolors="none", edgecolors=JINGGA,
+               lw=0.35)
+    ax.set_aspect("equal")
+    ax.set_xlim(*rentang)
+    ax.set_ylim(*rentang)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+
+def bab14_batas():
+    import warnings
+    warnings.simplefilter("ignore")
+    from bab14_data import bulan, cincin
+    from bab14_fitur import polinomial
+    fig, axs = plt.subplots(1, 4, figsize=(4.8, 1.45))
+    X, y, _ = cincin(300)
+    for ax, d, judul in ((axs[0], 1, "cincin, linear"),
+                         (axs[1], 2, "cincin, derajat 2")):
+        m = polinomial(d, False).fit(X, y)
+        _kontur_model(ax, lambda Z: m.predict_proba(Z)[:, 1], X, y,
+                      (-2, 2))
+        ax.set_title(judul, fontsize=6)
+    X, y = bulan(200)
+    for ax, pen, judul in ((axs[2], False, "bulan, derajat 9"),
+                           (axs[3], True, "derajat 9 + penalti")):
+        m = polinomial(9, pen).fit(X, y)
+        _kontur_model(ax, lambda Z: m.predict_proba(Z)[:, 1], X, y,
+                      (-2, 3))
+        ax.set_title(judul, fontsize=6)
+    fig.tight_layout(pad=0.3)
+    simpan(fig, "bab14-batas")
+
+
+def bab14_derajat():
+    import warnings
+    warnings.simplefilter("ignore")
+    from sklearn.metrics import log_loss
+    from bab14_data import bulan
+    from bab14_fitur import polinomial
+    X, y = bulan(200)
+    Xu, yu = bulan(5000, benih=1)
+    ds = list(range(1, 10))
+    hasil = {False: [], True: []}
+    for d in ds:
+        for pen in hasil:
+            m = polinomial(d, pen).fit(X, y)
+            hasil[pen].append(log_loss(yu, m.predict_proba(Xu)))
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.plot(ds, hasil[False], "-o", ms=2.5, color=MERAH, lw=1.0,
+            label="tanpa penalti")
+    ax.plot(ds, hasil[True], "-o", ms=2.5, color=BIRU, lw=1.0,
+            label="penalti L2, $C$ dari validasi silang")
+    ax.set_ylim(0.2, 1.3)
+    ax.set_xlabel("derajat polinomial")
+    ax.set_ylabel("log-loss uji")
+    ax.legend(fontsize=5.5, loc="upper left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab14-derajat")
+
+
+def bab14_spline():
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import SplineTransformer
+    from scipy.special import expit
+    from bab14_data import bentuk_u
+    x, y, _ = bentuk_u(300)
+    xx = np.linspace(0, 10, 300)[:, None]
+    lin = LogisticRegression(penalty=None).fit(x, y)
+    spl = make_pipeline(SplineTransformer(n_knots=5, degree=3),
+                        LogisticRegression(penalty=None,
+                                           max_iter=10_000)).fit(x, y)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.scatter(x[:, 0], y + np.random.default_rng(0).uniform(-.03, .03,
+                                                            len(y)),
+               s=3, color=ABU, lw=0)
+    ax.plot(xx, expit(-1 + 0.25 * (xx - 5) ** 2), color=HIJAU, lw=1.0,
+            ls="--", label="sebenarnya")
+    ax.plot(xx, lin.predict_proba(xx)[:, 1], color=MERAH, lw=1.0,
+            label="linear")
+    ax.plot(xx, spl.predict_proba(xx)[:, 1], color=BIRU, lw=1.2,
+            label="spline kubik, 5 simpul")
+    ax.set_xlabel("$x$")
+    ax.set_ylabel("peluang kelas 1")
+    ax.legend(fontsize=5.5, loc="center", bbox_to_anchor=(0.5, 0.62))
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab14-spline")
+
+
+def bab14_svm():
+    import warnings
+    warnings.simplefilter("ignore")
+    from scipy.special import expit
+    from sklearn.metrics.pairwise import rbf_kernel
+    from sklearn.svm import SVC
+    from bab14_data import bulan
+    from bab14_kernel import GAMMA, C, logistik_kernel
+    X, y = bulan(200)
+    a, b = logistik_kernel(rbf_kernel(X, X, gamma=GAMMA), y, C)
+    svm = SVC(kernel="rbf", gamma=GAMMA, C=C).fit(X, y)
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    _kontur_model(axs[0], lambda Z: expit(rbf_kernel(Z, X, gamma=GAMMA)
+                                          @ a + b), X, y, (-2, 3))
+    axs[0].set_title("regresi logistik kernel", fontsize=7)
+    _kontur_model(axs[1], lambda Z: (svm.decision_function(Z) > 0)
+                  .astype(float), X, y, (-2, 3))
+    sv = X[svm.support_]
+    axs[1].scatter(*sv.T, s=14, facecolors="none", edgecolors=MERAH,
+                   lw=0.5)
+    axs[1].set_title("SVC; lingkaran merah: vektor pendukung", fontsize=7)
+    fig.tight_layout()
+    simpan(fig, "bab14-svm")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

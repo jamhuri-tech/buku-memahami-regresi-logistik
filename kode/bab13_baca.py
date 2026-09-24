@@ -10,6 +10,7 @@ import warnings
 
 import numpy as np
 import statsmodels.formula.api as smf
+from scipy.special import expit
 
 from bab13_data import data_pasien
 
@@ -45,14 +46,18 @@ if __name__ == "__main__":
             beda = np.abs(g.predict(d) - p_kota).max()
             print(f"    beda peluang terbesar kedua model < 1e-10: "
                   f"{beda < 1e-10}")
-    d1 = d.assign(**{f"w_{v}": (d.wilayah == v).astype(int)
-                     for v in ("kota", "pinggiran", "desa")})
-    g = smf.logit("penyakit ~ usia + perokok + imt + w_kota"
-                  " + w_pinggiran + w_desa", d1).fit(disp=0)
-    print(f"    one-hot penuh + intersep: galat baku intersep > 1e6: "
-          f"{g.bse['Intercept'] > 1e6}")
-    jumlah = g.params["Intercept"] + g.params["w_kota"]
-    print(f"    intersep + w_kota = {jumlah:.4f} "
+    X = np.column_stack([np.ones(len(d)), d.usia, d.perokok, d.imt]
+                        + [(d.wilayah == v).astype(float)
+                           for v in ("kota", "pinggiran", "desa")])
+    y = d.penyakit.to_numpy(dtype=float)
+    theta = np.zeros(X.shape[1])
+    for _ in range(30):                      # Newton, langkah lstsq
+        pr = expit(X @ theta)
+        H = (X.T * (pr * (1 - pr))) @ X
+        theta -= np.linalg.lstsq(H, X.T @ (pr - y), rcond=None)[0]
+    print(f"    one-hot penuh + intersep: pangkat X = "
+          f"{np.linalg.matrix_rank(X)} dari {X.shape[1]} kolom")
+    print(f"    intersep + w_kota = {theta[0] + theta[4]:.4f} "
           f"(rujukan kota: {h.params['Intercept']:.4f})")
     print("(3) interaksi usia x perokok:")
     for nama, u in (("usia mentah   ", "usia"),

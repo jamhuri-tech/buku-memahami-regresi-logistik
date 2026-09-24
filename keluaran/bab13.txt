@@ -21,7 +21,7 @@ n = 2000, penyakit = 431 (0.215)
     beda peluang terbesar kedua model < 1e-10: True
 
 === blok 4 ===
-    one-hot penuh + intersep: galat baku intersep > 1e6: True
+    one-hot penuh + intersep: pangkat X = 6 dari 7 kolom
     intersep + w_kota = -8.5500 (rujukan kota: -8.5500)
 
 === blok 5 ===

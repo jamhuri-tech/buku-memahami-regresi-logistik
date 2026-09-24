@@ -1,0 +1,43 @@
+# Blok keluaran yang tercetak di Bab 14 (bab14-taklinear.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab14_*.py.
+
+=== blok 1 ===
+cincin  : n = 300, kelas 1 = 64
+bulan   : n = 300, kelas 1 = 150
+bentuk u: n = 300, kelas 1 = 188
+
+=== blok 2 ===
+(1) cincin, log-loss uji model sebenarnya 0.150
+    derajat 1, tanpa penalti: 0.546
+    derajat 2, tanpa penalti: 0.162
+    derajat 3, tanpa penalti: 0.173
+    derajat 6, tanpa penalti: 0.466
+
+=== blok 3 ===
+(2) bulan, log-loss uji:
+    derajat  tanpa penalti  penalti CV   C terpilih
+        1          0.335       0.337   1
+        2          0.337       0.344   0.316228
+        3          0.326       0.258   100
+        4          0.372       0.252   10
+        6          0.749       0.263   10
+        9          1.222       0.261   3.16228
+
+=== blok 4 ===
+(3) bentuk U, log-loss uji: sebenarnya 0.468
+    linear 0.661, spline 0.482
+
+=== blok 5 ===
+(1) kernel kita lawan Nystroem(200 komponen) + LR:
+    maks beda peluang < 1e-4: True
+    log-loss uji 0.2924, akurasi 0.9038
+    Nystroem  10 komponen: log-loss uji 0.3137
+    Nystroem  30 komponen: log-loss uji 0.2927
+    Nystroem 100 komponen: log-loss uji 0.2923
+
+=== blok 6 ===
+(2) data bulan, kernel RBF, gamma = 1, C = 1:
+    SVC      : akurasi 0.9092, log-loss (Platt) 0.2498
+    logistik : akurasi 0.9038, log-loss 0.2924
+    vektor pendukung SVC: 63 dari 200
+    koefisien a_i logistik yang |a_i| < 1e-6: 0 dari 200
