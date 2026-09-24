@@ -1,0 +1,53 @@
+# Blok keluaran yang tercetak di Bab 9 (bab09-newton.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab09_*.py.
+
+=== blok 1 ===
+ k   log-loss mentah  log-loss dipusat  |theta_k - MLE|
+ 0   0.693147180560  0.693147180560    3.6e+00
+ 1   0.475284063248  0.475284063248    1.1e+00
+ 2   0.459638530293  0.459638530293    2.5e-01
+ 3   0.458950495303  0.458950495303    1.4e-02
+ 4   0.458948314668  0.458948314668    4.8e-05
+ 5   0.458948314643  0.458948314643    5.5e-10
+ 6   0.458948314643  0.458948314643    < 1e-12
+
+=== blok 2 ===
+IRLS lawan Newton, 6 iterasi: maks selisih < 1e-10: True
+statsmodels GLM (IRLS): 5 iterasi, b = -3.5903, w = 0.6393
+statsmodels Logit (Newton): 6 iterasi, b = -3.5903, w = 0.6393
+
+=== blok 3 ===
+Newton murni dari (b, w) = (10, -2):
+  iterasi 1: b = -241.32, w = 48.47
+  iterasi 2: |theta| > 1e15: True
+
+=== blok 4 ===
+teredam dari (10, -2): 6 iterasi, b = -3.5903, w = 0.6393
+
+=== blok 5 ===
+jam belajar mentah:
+  scipy          iterasi  evaluasi  |theta - MLE| < 1e-6
+  BFGS                13        15  False
+  L-BFGS-B            15        17  False
+  Newton-CG            8         8  True
+  scikit-learn     n_iter_  |theta - MLE| < 1e-6
+  lbfgs                 17  True
+  newton-cg              8  True
+  newton-cholesky        5  True
+  sag                 1841  True
+  saga                3497  True
+  liblinear              5  True
+
+=== blok 6 ===
+sintetis 10 ribu:
+  scipy          iterasi  evaluasi  |theta - MLE| < 1e-6
+  BFGS                15        16  False
+  L-BFGS-B             8         9  False
+  Newton-CG            6         7  True
+  scikit-learn     n_iter_  |theta - MLE| < 1e-6
+  lbfgs                 12  True
+  newton-cg              6  True
+  newton-cholesky        6  True
+  sag                   77  True
+  saga                  42  True
+  liblinear             15  True

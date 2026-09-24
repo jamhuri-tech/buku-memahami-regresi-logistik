@@ -797,6 +797,114 @@ def bab08_epoch():
     simpan(fig, "bab08-epoch")
 
 
+
+# ============================ Bab 9 ==================================
+
+def bab09_kuadratik():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    x, y = jam_belajar()
+    u = x - x.mean()
+    X = rancang(u)
+    b0 = sm.Logit(y, X).fit(disp=0).params[0]
+    w = np.linspace(-0.4, 1.6, 400)
+    Z = b0 + w[:, None] * u
+    f = np.mean(np.logaddexp(0, Z) - y * Z, axis=1)
+
+    def turunan(wk):
+        from scipy.special import expit
+        p = expit(b0 + wk * u)
+        return (np.mean((p - y) * u), np.mean(p * (1 - p) * u ** 2),
+                np.mean(np.logaddexp(0, b0 + wk * u) - y * (b0 + wk * u)))
+    fig, ax = plt.subplots(figsize=(4.2, 2.3))
+    ax.plot(w, f, color=BIRU, lw=1.2, label="log-loss")
+    wk = 0.0
+    for k, warna in zip(range(3), (JINGGA, HIJAU, MERAH)):
+        g, h, fk = turunan(wk)
+        q = fk + g * (w - wk) + 0.5 * h * (w - wk) ** 2
+        ax.plot(w, q, color=warna, lw=0.8, ls="--",
+                label=f"hampiran di $w_{k}$")
+        ax.plot([wk], [fk], "o", ms=3, color=warna)
+        baru = wk - g / h
+        ax.annotate("", (baru, fk + g * (baru - wk)
+                         + 0.5 * h * (baru - wk) ** 2), (wk, fk),
+                    arrowprops=dict(arrowstyle="->", lw=0.6,
+                                    color=warna))
+        wk = baru
+    ax.set_ylim(0.44, 0.75)
+    ax.set_xlabel("bobot $w$ (intersep tetap di MLE)")
+    ax.set_ylabel("log-loss")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab09-kuadratik")
+
+
+def bab09_lintasan():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    from bab09_newton import newton, newton_teredam
+    x, y = jam_belajar()
+    X = rancang(x)
+    t = sm.Logit(y, X).fit(disp=0).params
+    B, W = np.meshgrid(np.linspace(-6, 12, 300),
+                       np.linspace(-2.3, 1.3, 300))
+    L_ = _loss_grid(X, y, B, W)
+    fig, ax = plt.subplots(figsize=(4.2, 2.5))
+    ax.contour(B, W, L_, levels=np.geomspace(0.47, 8, 9), colors=ABU_GARIS,
+               linewidths=0.5)
+    L = np.linalg.eigvalsh(X.T @ X / len(y)).max() / 4
+    j = _jalur_gd(X, y, 1 / L, 30)
+    ax.plot(j[:, 0], j[:, 1], "-o", ms=1.5, lw=0.7, color=ABU,
+            label="GD, 30 langkah")
+    jn = np.array(newton(X, y, np.zeros(2), 6))
+    ax.plot(jn[:, 0], jn[:, 1], "-o", ms=2.5, lw=0.9, color=BIRU,
+            label="Newton dari 0")
+    theta, jalur = np.array([10.0, -2.0]), [np.array([10.0, -2.0])]
+    for _ in range(8):
+        theta, _ = newton_teredam(X, y, theta, maks=1)
+        jalur.append(theta)
+    jd = np.array(jalur)
+    ax.plot(jd[:, 0], jd[:, 1], "-s", ms=2.5, lw=0.9, color=JINGGA,
+            label="Newton teredam dari $(10, -2)$")
+    ax.plot(*t, "*", ms=7, color=MERAH, zorder=4)
+    ax.set_xlabel("intersep $b$")
+    ax.set_ylabel("bobot $w$")
+    ax.legend(fontsize=5.3, loc="lower left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab09-lintasan")
+
+
+def bab09_galat():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    from bab09_newton import newton
+    x, y = jam_belajar()
+    X = rancang(x)
+    t = sm.Logit(y, X).fit(disp=0).params
+    L = np.linalg.eigvalsh(X.T @ X / len(y)).max() / 4
+    jn = np.array(newton(X, y, np.zeros(2), 6))
+    jg = _jalur_gd(X, y, 1 / L, 30)
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    en = np.maximum(np.linalg.norm(jn - t, axis=1), 1e-17)
+    ax.semilogy(range(len(en)), en, "-o", ms=3, color=BIRU, label="Newton")
+    ax.semilogy(range(len(jg)), np.linalg.norm(jg - t, axis=1), "-o",
+                ms=1.8, lw=0.8, color=ABU, label="GD, $\\eta = 1/L$")
+    ax.axhline(2.2e-16 * np.linalg.norm(t), color=ABU_GARIS, lw=0.5,
+               ls="--")
+    ax.set_xlabel("iterasi")
+    ax.set_ylabel(r"$\|\theta_k - \hat\theta\|$")
+    ax.legend(fontsize=5.5, loc="center right")
+    kunci_label(ax, "y")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab09-galat")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
