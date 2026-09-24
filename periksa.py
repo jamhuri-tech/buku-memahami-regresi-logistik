@@ -40,6 +40,10 @@ for berkas in sorted(glob.glob("keluaran/bab[0-9][0-9].txt")):
             print(f"Bab {int(nn)}: blok tidak dihasilkan kode:")
             print("    " + t.replace("\n", "\n    ")[:400])
     print(f"Bab {int(nn)}: {cocok}/{len(blok)} blok cocok")
+    if cocok < len(blok):
+        print(f"--- keluaran kode Bab {int(nn)} di komputer ini ---")
+        print(bersih)
+        print("--- akhir keluaran ---")
 
 print("SEMUA COCOK" if masalah == 0 else f"{masalah} masalah")
 sys.exit(1 if masalah else 0)
