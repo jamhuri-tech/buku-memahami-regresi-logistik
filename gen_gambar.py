@@ -417,6 +417,163 @@ def bab05_jujur():
     simpan(fig, "bab05-jujur")
 
 
+
+# ============================ Bab 6 ==================================
+
+def bab06_sisa():
+    from scipy.special import expit
+    from bab04_data import jam_belajar
+    from bab04_model import taksir
+    x, y = jam_belajar()
+    geser = np.zeros(len(x))
+    for v in np.unique(x):
+        i = np.flatnonzero(x == v)
+        geser[i] = 0.12 * (np.arange(len(i)) - (len(i) - 1) / 2)
+    xx = np.linspace(0, 12, 300)
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0), sharey=True)
+    for ax, (b, w), judul in zip(axs, ((0.0, 0.0), taksir()),
+                                 (r"$\theta = 0$", "MLE")):
+        p = expit(b + w * x)
+        ax.plot(xx, expit(b + w * xx), color=ABU, lw=0.8)
+        for xi, yi, pi, g in zip(x, y, p, geser):
+            ax.annotate("", (xi + g, pi), (xi + g, yi),
+                        arrowprops=dict(arrowstyle="-|>", lw=0.6,
+                                        mutation_scale=5,
+                                        color=MERAH if yi == 0
+                                        else BIRU))
+        ax.scatter(x + geser, y, s=7, zorder=3,
+                   color=np.where(y == 1, BIRU, JINGGA))
+        ax.set_xlabel("jam belajar")
+        ax.set_title(f"sisa $p_i - y_i$ di {judul}")
+        _rapikan(ax)
+    axs[0].set_ylabel("peluang lulus")
+    fig.tight_layout()
+    simpan(fig, "bab06-sisa")
+
+
+def bab06_bobot():
+    from scipy.special import expit
+    from bab04_data import jam_belajar
+    from bab04_model import taksir
+    from bab06_turunan import hessian, rancang
+    x, y = jam_belajar()
+    b, w = taksir()
+    xx = np.linspace(0, 12, 300)
+    fig, (a, c) = plt.subplots(1, 2, figsize=(4.7, 1.95))
+    pp = expit(b + w * xx)
+    a.plot(xx, pp * (1 - pp), color=HIJAU, lw=1.0)
+    p = expit(b + w * x)
+    a.vlines(x, 0, p * (1 - p), color=HIJAU, lw=0.8)
+    a.plot(x, p * (1 - p), "o", ms=2.5, color=HIJAU)
+    a.axvline(-b / w, color=ABU_GARIS, lw=0.5, ls="--")
+    a.set_xlabel("jam belajar")
+    a.set_title(r"bobot $d_i = p_i(1 - p_i)$ di MLE")
+    X = rancang(x)
+    t = np.geomspace(0.5, 30, 60)
+    e = np.array([np.linalg.eigvalsh(hessian(s * np.array([b, w]), X,
+                                              y)) for s in t])
+    c.loglog(t, e[:, 0], color=BIRU, lw=1.1, label="terkecil")
+    c.loglog(t, e[:, 1], color=JINGGA, lw=1.0, ls="--",
+             label="terbesar")
+    c.set_xlabel(r"$t$ pada sinar $t\,\hat{\theta}$")
+    c.set_title("nilai eigen Hessian")
+    c.legend(fontsize=5.5, loc="lower left")
+    kunci_label(c, "x", "y")
+    for ax in (a, c):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab06-bobot")
+
+
+def _loss_grid(X, y, B, W):
+    Z = B[..., None] * X[:, 0] + W[..., None] * X[:, 1]
+    return np.mean(np.logaddexp(0, Z) - y * Z, axis=-1)
+
+
+def bab06_taylor():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import hessian, log_loss, rancang
+    x, y = jam_belajar()
+    X = rancang(x)
+    t = sm.Logit(y, X).fit(disp=0).params
+    H = hessian(t, X, y)
+    B, W = np.meshgrid(np.linspace(-9, 2, 300),
+                       np.linspace(-0.2, 1.5, 300))
+    L = _loss_grid(X, y, B, W)
+    dB, dW = B - t[0], W - t[1]
+    Q = log_loss(t, X, y) + 0.5 * (H[0, 0] * dB ** 2
+                                  + 2 * H[0, 1] * dB * dW
+                                  + H[1, 1] * dW ** 2)
+    tingkat = log_loss(t, X, y) + np.array([0.02, 0.08, 0.2, 0.5])
+    fig, ax = plt.subplots(figsize=(4.0, 2.4))
+    ax.contour(B, W, L, levels=tingkat, colors=BIRU, linewidths=0.9)
+    ax.contour(B, W, Q, levels=tingkat, colors=MERAH, linewidths=0.7,
+               linestyles="--")
+    ax.plot(*t, "o", ms=3, color=MERAH)
+    ax.plot([], [], color=BIRU, lw=0.9, label="log-loss")
+    ax.plot([], [], color=MERAH, lw=0.7, ls="--",
+            label="hampiran kuadratik")
+    ax.set_xlabel("intersep $b$")
+    ax.set_ylabel("bobot $w$")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab06-taylor")
+
+
+def bab06_pusat():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import log_loss, rancang
+    x, y = jam_belajar()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    for ax, u, judul in zip(axs, (x, x - x.mean()),
+                            ("$x$ mentah", "$x$ dipusatkan")):
+        X = rancang(u)
+        t = sm.Logit(y, X).fit(disp=0).params
+        B, W = np.meshgrid(np.linspace(t[0] - 3, t[0] + 3, 300),
+                           np.linspace(t[1] - 0.75, t[1] + 0.75, 300))
+        L = _loss_grid(X, y, B, W)
+        f0 = log_loss(t, X, y)
+        ax.contour(B, W, L, levels=f0 + np.array([.01, .03, .08, .2,
+                                                  .4, .8]),
+                   colors=BIRU, linewidths=0.6)
+        ax.plot(*t, "o", ms=3, color=MERAH)
+        ax.set_xlabel("intersep")
+        ax.set_title(judul)
+        _rapikan(ax)
+    axs[0].set_ylabel("bobot $w$")
+    fig.tight_layout()
+    simpan(fig, "bab06-pusat")
+
+
+def bab06_kolinear():
+    from bab04_data import jam_belajar
+    from bab04_model import taksir
+    x, y = jam_belajar()
+    b, w = taksir()
+    W1, W2 = np.meshgrid(np.linspace(-0.6, 1.6, 300),
+                         np.linspace(-0.6, 0.9, 300))
+    Z = b + (W1[..., None] + 2 * W2[..., None]) * x
+    L = np.mean(np.logaddexp(0, Z) - y * Z, axis=-1)
+    fig, ax = plt.subplots(figsize=(4.0, 2.3))
+    ax.contour(W1, W2, L, levels=L.min() + np.array([.01, .05, .15,
+                                                    .4, 1]),
+               colors=BIRU, linewidths=0.6)
+    ww = np.linspace(-0.6, 1.6, 2)
+    ax.plot(ww, (w - ww) / 2, color=MERAH, lw=1.1,
+            label=r"$w_1 + 2w_2 = \hat w$")
+    for t in ((w, 0), (0, w / 2), (0.1279, 0.2557)):
+        ax.plot(*t, "o", ms=2.8, color=MERAH)
+    ax.set_xlabel("$w_1$ (bobot $x$)")
+    ax.set_ylabel("$w_2$ (bobot $2x$)")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab06-kolinear")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

@@ -1,0 +1,65 @@
+# Blok keluaran yang tercetak di Bab 6 (bab06-cembung.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab06_*.py.
+
+=== blok 1 ===
+sum x = 91, sum x^2 = 651, sum x (y = 1) = 60
+
+=== blok 2 ===
+di theta = 0: gradien = (0.000000, -0.906250)
+              Hessian = [[0.250000, 1.421875],
+                         [1.421875, 10.171875]]
+beda hingga: maks galat gradien 4.3e-11, Hessian 6.0e-09
+
+=== blok 3 ===
+di MLE: norma gradien < 1e-12: True
+        Hessian = [[0.148881, 0.823914],
+                   [0.823914, 5.206024]]
+        nilai eigen = [0.018033 5.336871]
+
+=== blok 4 ===
+(1) 10000 titik acak: nilai eigen terkecil Hessian
+    minimum 6.98e-09, maksimum 5.02e-02, negatif: 0
+
+=== blok 5 ===
+(2) sinar theta = t * MLE:
+     t   log-loss   eigen terkecil  eigen terbesar
+     1     0.4589         1.80e-02        5.34e+00
+     2     0.5413         4.26e-03        2.86e+00
+     5     1.0489         3.66e-04        1.21e+00
+    10     2.0106         5.44e-05        3.98e-01
+    20     3.9968         1.24e-06        3.47e-02
+
+=== blok 6 ===
+(3) kolom x dan 2x:
+    statsmodels: LinAlgError (Singular matrix)
+    scikit-learn: w1 = 0.1279, w2 = 0.2557, w1 + 2 w2 = 0.6393
+    (w1, w2) = ( 0.6393,  0.0000): log-loss 0.458948
+    (w1, w2) = ( 0.0000,  0.3197): log-loss 0.458948
+    (w1, w2) = ( 1.9180, -0.6393): log-loss 0.458948
+    nilai eigen Hessian: 0.0184, 26.1606, dan
+    satu lagi yang |.| < 1e-12: True
+
+=== blok 7 ===
+data dua peubah: n = 200, sum y = 112
+parameter benar: w = (2, -1), b = 0.5
+tanpa penalti:
+  w = (1.744, -1.139), b = 0.400, sum p = 112.000
+  X^T(p - y) = (0.000, 0.000)
+L2, C = 1:
+  w = (1.610, -1.059), b = 0.383, sum p = 112.000
+  X^T(p - y) = (-1.610, 1.059), -w/C = (-1.610, 1.059)
+L2, C = 0.01:
+  w = (0.325, -0.239), b = 0.251, sum p = 112.000
+  X^T(p - y) = (-32.536, 23.916), -w/C = (-32.536, 23.916)
+
+=== blok 8 ===
+L2, C = 0.01, liblinear:
+  w = (0.325, -0.237), b = 0.081, sum p = 103.874
+  X^T(p - y) = (-32.498, 23.668), -w/C = (-32.498, 23.668)
+
+=== blok 9 ===
+rata-rata x = 5.6875, simpangan baku x = 2.8879
+peubah       b        w     log-loss  kondisi  korelasi
+mentah    -3.5903   0.6393  0.458948    295.9  -0.936
+dipusat    0.0459   0.6393  0.458948      4.4  +0.073
+dibakukan  0.0459   1.8463  0.458948      1.9  +0.073
