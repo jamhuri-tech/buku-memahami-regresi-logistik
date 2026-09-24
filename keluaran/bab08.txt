@@ -1,0 +1,51 @@
+# Blok keluaran yang tercetak di Bab 8 (bab08-gradien.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab08_*.py.
+
+=== blok 1 ===
+x mentah: L = 10.3716, lambda di MLE = (0.0180, 5.3369)
+  kappa = L / lambda_min = 575.1
+  kappa ln(|theta_hat| / 1e-6) = 8690
+  batas stabil di MLE: eta < 2/lambda_max = 3.89/L
+  eta = 0.5/L: langkah 16658
+  eta =   1/L: langkah 8325
+  eta =   2/L: langkah 4159
+  eta =   4/L: langkah tidak sampai dalam 50000
+  eta =   8/L: langkah tidak sampai dalam 50000
+
+=== blok 2 ===
+x dipusatkan: L = 2.0850, lambda di MLE = (0.1478, 0.6510)
+  kappa = L / lambda_min = 14.1
+  kappa ln(|theta_hat| / 1e-6) = 189
+  batas stabil di MLE: eta < 2/lambda_max = 6.41/L
+  eta = 0.5/L: langkah 304
+  eta =   1/L: langkah 149
+  eta =   2/L: langkah 70
+  eta =   4/L: langkah 34
+  eta =   8/L: langkah tidak sampai dalam 50000
+
+=== blok 3 ===
+  eta = 4/L, 50000 langkah: w berganti 0.5975, 0.7231, 0.5975
+
+=== blok 4 ===
+  Nesterov, eta = 1/L: langkah 1889
+
+=== blok 5 ===
+  Nesterov, eta = 1/L: langkah 84
+
+=== blok 6 ===
+n = 10000, d = 10, log-loss minimum 0.385811
+L = 0.2619, L_maks = max ||x_i||^2 / 4 = 8.9957
+selisih log-loss dari minimum sesudah epoch ke-
+                              1        5       10       20
+GD, eta = 1/L              5.6e-02  7.2e-03  1.3e-03  6.8e-05
+SGD, eta = 0.05            1.7e-02  1.5e-02  1.7e-02  1.4e-02
+SGD, eta = 0.01            1.8e-03  2.5e-03  3.1e-03  3.2e-03
+SGD, eta = 0.5/(1+k/n)     1.0e-01  2.3e-02  1.5e-02  8.6e-03
+SAGA, eta = 1/(3 L_maks)   3.6e-03  7.7e-05  2.4e-07  2.7e-12
+
+=== blok 7 ===
+scikit-learn saga: 35 epoch, maks |theta - MLE| < 1e-6: True
+
+=== blok 8 ===
+jam belajar mentah: saga 100 epoch, w = 0.3802, peringatan 1
+jam belajar dibakukan: saga 14 epoch, w = 1.8462, peringatan 0

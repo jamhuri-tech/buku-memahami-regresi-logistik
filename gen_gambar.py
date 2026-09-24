@@ -687,6 +687,116 @@ def bab07_cover():
     simpan(fig, "bab07-cover")
 
 
+
+# ============================ Bab 8 ==================================
+
+def _jalur_gd(X, y, eta, langkah, momentum=False):
+    from bab06_turunan import gradien
+    theta = v = np.zeros(X.shape[1])
+    jalur = [theta]
+    for k in range(1, langkah + 1):
+        baru = v - eta * gradien(v, X, y)
+        v = baru + ((k - 1) / (k + 2) * (baru - theta) if momentum
+                    else 0)
+        theta = baru
+        jalur.append(theta)
+    return np.array(jalur)
+
+
+def bab08_lintasan():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    x, y = jam_belajar()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    for ax, u, judul, langkah in zip(
+            axs, (x, x - x.mean()), ("$x$ mentah, 400 langkah",
+                                     "$x$ dipusatkan, 40 langkah"),
+            (400, 40)):
+        X = rancang(u)
+        t = sm.Logit(y, X).fit(disp=0).params
+        L = np.linalg.eigvalsh(X.T @ X / len(y)).max() / 4
+        B, W = np.meshgrid(np.linspace(min(0, t[0]) - 1,
+                                       max(0, t[0]) + 1, 300),
+                           np.linspace(-0.15, 1.0, 300))
+        L_ = _loss_grid(X, y, B, W)
+        ax.contour(B, W, L_, levels=L_.min() + np.array(
+            [.01, .03, .08, .2, .4, .8]), colors=ABU_GARIS,
+            linewidths=0.5)
+        jn = _jalur_gd(X, y, 1 / L, langkah, momentum=True)
+        ax.plot(jn[:, 0], jn[:, 1], "--", color=JINGGA, lw=0.7)
+        j = _jalur_gd(X, y, 1 / L, langkah)
+        ax.plot(j[:, 0], j[:, 1], "-", color=BIRU, lw=0.9, zorder=3)
+        ax.plot(j[::10, 0], j[::10, 1], "o", ms=1.6, color=BIRU,
+                zorder=3)
+        ax.plot(*t, "*", ms=6, color=MERAH)
+        ax.set_title(judul)
+        ax.set_xlabel("intersep")
+        _rapikan(ax)
+    axs[0].set_ylabel("bobot $w$")
+    axs[0].plot([], [], color=BIRU, lw=0.8, label="GD")
+    axs[0].plot([], [], color=JINGGA, lw=0.7, ls="--", label="Nesterov")
+    axs[0].legend(fontsize=5.5, loc="upper right")
+    fig.tight_layout()
+    simpan(fig, "bab08-lintasan")
+
+
+def bab08_laju():
+    import statsmodels.api as sm
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    x, y = jam_belajar()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0), sharey=True)
+    for ax, u, judul, langkah in zip(axs, (x, x - x.mean()),
+                                     ("$x$ mentah", "$x$ dipusatkan"),
+                                     (10000, 400)):
+        X = rancang(u)
+        t = sm.Logit(y, X).fit(disp=0).params
+        L = np.linalg.eigvalsh(X.T @ X / len(y)).max() / 4
+        for c, w, gaya in ((1, BIRU, "-"), (2, HIJAU, "-"),
+                           (4, MERAH, ":")):
+            j = _jalur_gd(X, y, c / L, langkah)
+            ax.semilogy(np.linalg.norm(j - t, axis=1), color=w, lw=0.9,
+                        ls=gaya, label=f"GD, $\\eta = {c}/L$")
+        j = _jalur_gd(X, y, 1 / L, langkah, momentum=True)
+        ax.semilogy(np.linalg.norm(j - t, axis=1), color=JINGGA, lw=0.5,
+                    alpha=0.8, label="Nesterov")
+        ax.set_ylim(1e-7, 20)
+        ax.set_xlabel("langkah")
+        ax.set_title(judul)
+        kunci_label(ax, "y")
+        _rapikan(ax)
+    axs[0].set_ylabel(r"$\|\theta_k - \hat\theta\|$")
+    axs[1].legend(fontsize=5.2, loc="upper right")
+    fig.tight_layout()
+    simpan(fig, "bab08-laju")
+
+
+def bab08_epoch():
+    import statsmodels.api as sm
+    from bab08_sgd import data_besar, loss, semua_metode
+    X, y = data_besar()
+    ref = sm.Logit(y, X).fit(disp=0).params
+    L_opt = loss(ref, X, y)
+    hasil, _, _ = semua_metode(X, y)
+    warna = [BIRU, ABU, ABU_GARIS, HIJAU, MERAH]
+    gaya = ["-", "--", ":", "-.", "-"]
+    fig, ax = plt.subplots(figsize=(4.2, 2.3))
+    for (nama, catat), w, g in zip(hasil.items(), warna, gaya):
+        sel = [loss(c, X, y) - L_opt for c in catat]
+        ax.semilogy(range(1, len(sel) + 1), sel, color=w, ls=g, lw=1.0,
+                    marker="o", ms=1.8,
+                    label=nama.replace("eta", "$\\eta$")
+                    .replace("L_maks", "$L_{\\mathrm{maks}}$"))
+    ax.set_xlabel("epoch")
+    ax.set_ylabel("log-loss dikurangi minimum")
+    ax.legend(fontsize=5.2, loc="lower left")
+    kunci_label(ax, "y")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab08-epoch")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
