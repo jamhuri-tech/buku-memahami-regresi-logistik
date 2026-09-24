@@ -905,6 +905,98 @@ def bab09_galat():
     simpan(fig, "bab09-galat")
 
 
+
+# ============================ Bab 10 =================================
+
+def bab10_jalur():
+    import warnings
+    from sklearn.linear_model import LogisticRegression
+    from bab04_data import dua_peubah
+    X, y = dua_peubah()
+    Cs = np.geomspace(1e-3, 1e3, 40)
+    hasil = {"lbfgs": [], "liblinear": []}
+    for C in Cs:
+        for s in hasil:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                m = LogisticRegression(C=C, solver=s, tol=1e-10,
+                                       max_iter=10_000).fit(X, y)
+            hasil[s].append(np.r_[m.intercept_, m.coef_[0]])
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0), sharex=True)
+    for ax, j, judul in zip(axs, (1, 0), ("bobot $w_1$", "intersep $b$")):
+        for s, w, g in (("lbfgs", BIRU, "-"), ("liblinear", MERAH, "--")):
+            ax.semilogx(Cs, np.array(hasil[s])[:, j], color=w, ls=g,
+                        lw=1.0, label=s)
+        ax.set_xlabel("$C$")
+        ax.set_title(judul)
+        kunci_label(ax, "x")
+        _rapikan(ax)
+    axs[1].legend(fontsize=5.5, loc="lower right")
+    fig.tight_layout()
+    simpan(fig, "bab10-jalur")
+
+
+def bab10_ukuran():
+    import statsmodels.api as sm
+    from sklearn.linear_model import LogisticRegression
+    from bab04_data import W_BENAR, dua_peubah
+    ns = [25, 50, 100, 200, 400, 800, 1600, 3200]
+    X, y = dua_peubah(n=max(ns))
+    w_c1, w_c1n, w_mle = [], [], []
+    for n in ns:
+        Xn, yn = X[:n], y[:n]
+        w_c1.append(LogisticRegression(C=1.0).fit(Xn, yn).coef_[0, 0])
+        w_c1n.append(LogisticRegression(C=200.0 / n)
+                     .fit(Xn, yn).coef_[0, 0])
+        w_mle.append(sm.Logit(yn, sm.add_constant(Xn)).fit(disp=0)
+                     .params[1])
+    fig, ax = plt.subplots(figsize=(4.0, 2.2))
+    ax.semilogx(ns, w_mle, "-o", ms=2.5, color=ABU, lw=0.9, label="MLE")
+    ax.semilogx(ns, w_c1, "-o", ms=2.5, color=BIRU, lw=1.0,
+                label="$C = 1$ tetap")
+    ax.semilogx(ns, w_c1n, "-s", ms=2.5, color=MERAH, lw=1.0,
+                label="$C = 200/n$")
+    ax.axhline(W_BENAR[0], color=HIJAU, lw=0.6, ls="--")
+    ax.text(ns[0], W_BENAR[0] + 0.05, "nilai sebenarnya", fontsize=5.5,
+            color=HIJAU)
+    ax.set_xlabel("banyaknya titik $n$")
+    ax.set_ylabel("taksiran $w_1$")
+    ax.legend(fontsize=5.5, loc="lower right")
+    kunci_label(ax, "x")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab10-ukuran")
+
+
+def bab10_newton():
+    from bab04_data import dua_peubah
+    from bab10_kita import RegresiLogistikKita
+    X, y = dua_peubah()
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    for C, w in ((0.01, HIJAU), (1.0, BIRU), (100.0, JINGGA),
+                 (None, MERAH)):
+        m = RegresiLogistikKita(C=C if C else 1.0,
+                                penalti="l2" if C else None)
+        Xt = m._rancang(X)
+        s = np.ones(len(y))
+        theta, norma = np.zeros(3), []
+        for _ in range(8):
+            f, g, H = m._bagian(theta, Xt, y.astype(float), s)
+            norma.append(max(np.max(np.abs(g)), 1e-17))
+            theta = theta - np.linalg.solve(H, g)
+        ax.semilogy(range(8), norma, "-o", ms=2.5, lw=0.9, color=w,
+                    label="tanpa penalti" if C is None
+                    else "$C = " + f"{C:g}".replace(".", "{,}") + "$")
+    ax.axhline(1e-10, color=ABU_GARIS, lw=0.5, ls="--")
+    ax.set_xlabel("iterasi Newton")
+    ax.set_ylabel(r"$\max_j |g_j|$")
+    ax.legend(fontsize=5.5)
+    kunci_label(ax, "y")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab10-newton")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

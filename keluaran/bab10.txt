@@ -1,0 +1,32 @@
+# Blok keluaran yang tercetak di Bab 10 (bab10-darinol.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab10_*.py.
+
+=== blok 1 ===
+(1) maks |theta_kita - theta_sklearn| < 1e-6:
+    dua peubah C = 0.01: True, 1: True, 100: True, None: True
+    sintetis   C = 0.01: True, 1: True, 100: True, None: True
+
+=== blok 2 ===
+(6) tanpa penalti lawan statsmodels < 1e-8: True
+    iterasi Newton kita: 6
+
+=== blok 3 ===
+(2) classes_ kita ['gagal', 'lulus']
+    classes_ sklearn ['gagal', 'lulus']
+    maks beda predict_proba < 1e-8: True
+    predict sama untuk semua titik: True
+
+=== blok 4 ===
+(3) kita   : bobot sampel = baris digandakan: True
+    sklearn: bobot sampel = baris digandakan: True
+
+=== blok 5 ===
+(4) C = 1, data asli    : w = [ 1.6101 -1.0587]
+    C = 1, data ganda   : w = [ 1.6725 -1.0963]
+    C = 2, data asli    : w = [ 1.6725 -1.0963]
+
+=== blok 6 ===
+(5) liblinear, C = 0.01:
+    intercept_scaling =     1: b kita = 0.0813, sklearn 0.0813
+    intercept_scaling =   100: b kita = 0.2510, sklearn 0.2510
+    lbfgs (intersep tak dipenalti): b = 0.2511
