@@ -276,6 +276,147 @@ def bab04_asal():
     simpan(fig, "bab04-asal")
 
 
+
+# ============================ Bab 5 ==================================
+
+def bab05_lanskap():
+    from scipy.special import expit
+    from bab04_data import jam_belajar
+    from bab04_model import taksir
+    x, y = jam_belajar()
+    bb = np.linspace(-9, 2, 400)
+    ww = np.linspace(-0.3, 1.6, 400)
+    B, W = np.meshgrid(bb, ww)
+    P = expit(B[..., None] + W[..., None] * x)
+    LL = np.sum(np.where(y == 1, np.log(P), np.log(1 - P)), axis=-1)
+    b0, w0 = taksir()
+    fig, ax = plt.subplots(figsize=(4.0, 2.5))
+    tingkat = [-30, -20, -15, -12, -10, -9, -8.5, -8, -7.6]
+    cs = ax.contour(B, W, LL, levels=tingkat, colors=BIRU,
+                    linewidths=0.5)
+    ax.clabel(cs, levels=[-30, -20, -12, -9, -8],
+              fmt=lambda v: angka(v, 1).replace(",0", ""), fontsize=5)
+    ax.contourf(B, W, LL, levels=[-7.6, -7.3], colors=[BIRU_MUDA])
+    ax.plot([b0], [w0], "o", ms=3.5, color=MERAH)
+    ax.annotate("MLE", (b0, w0), (b0 + 1.2, w0 + 0.25), fontsize=6,
+                color=MERAH, arrowprops=dict(arrowstyle="-", lw=0.4,
+                                             color=MERAH))
+    for b, w in ((0, 0), (-2, 0.3), (-5, 1.0)):
+        ax.plot([b], [w], "s", ms=2.8, color=JINGGA)
+    ax.set_xlabel("intersep $b$")
+    ax.set_ylabel("bobot $w$")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-lanskap")
+
+
+def bab05_perbutir():
+    from scipy.special import expit
+    p = np.linspace(0.005, 0.995, 400)
+    z = np.linspace(-6, 6, 600)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 1.95))
+    a.plot(p, -np.log(p), color=BIRU, lw=1.1, label="$y = 1$: $-\\log p$")
+    a.plot(p, -np.log(1 - p), color=JINGGA, lw=1.1,
+           label="$y = 0$: $-\\log(1-p)$")
+    a.set_ylim(0, 5)
+    a.set_xlabel("peluang kelas 1, $p$")
+    a.set_title("log-loss satu titik")
+    a.legend(fontsize=5.5, loc="upper center")
+    b.plot(z, np.logaddexp(0, -z), color=BIRU, lw=1.1, label="log-loss")
+    b.plot(z, (expit(z) - 1) ** 2, color=MERAH, lw=1.0, ls="--",
+           label="kuadrat galat")
+    b.step(z, (z <= 0).astype(float), color=ABU, lw=0.8, where="post",
+           label="galat 0-1")
+    b.set_ylim(0, 4)
+    b.set_xlabel("skor $z$ (label $y = 1$)")
+    b.set_title("sebagai fungsi skor")
+    b.legend(fontsize=5.5)
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-perbutir")
+
+
+def bab05_kuadrat():
+    from scipy.special import expit
+    import bab05_kuadrat as k5
+    z = np.linspace(-2, 12, 500)
+    p = expit(z)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.0))
+    a.semilogy(z, p, color=BIRU, lw=1.1, label="log-loss: $\\sigma$")
+    a.semilogy(z, 2 * p * p * (1 - p), color=MERAH, lw=1.0, ls="--",
+               label="kuadrat: $2\\sigma^2(1-\\sigma)$")
+    a.set_xlabel("skor $z$ (label $y = 0$)")
+    a.set_title("besar gradien terhadap $z$")
+    a.legend(fontsize=5.5, loc="lower left")
+    kunci_label(a, "y")
+    for nama, f, g, w, gaya in (
+            ("log-loss", k5.log_loss, k5.grad_log_loss, BIRU, "-"),
+            ("kuadrat galat", k5.kuadrat, k5.grad_kuadrat, MERAH, "--")):
+        t = np.array([10.0, -2.0])
+        f_min = f(k5.gd(g, (0.0, 0.0))[100000])
+        langkah, sisa = [], []
+        for i in range(60001):
+            if i % 50 == 0 and f(t) - f_min > 1e-12:
+                langkah.append(i + 1)
+                sisa.append(f(t) - f_min)
+            t = t - 0.05 * g(t)
+        b.loglog(langkah, sisa, color=w, lw=1.0, ls=gaya, label=nama)
+    b.set_xlabel("langkah (mulai dari $(b, w) = (10, -2)$)")
+    b.set_title("loss dikurangi minimumnya")
+    b.legend(fontsize=5.5, loc="lower left")
+    kunci_label(b, "x", "y")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-kuadrat")
+
+
+def bab05_margin():
+    m = np.linspace(-2.5, 3, 500)
+    fig, ax = plt.subplots(figsize=(4.0, 2.2))
+    ax.step(m, (m <= 0).astype(float), color=ABU, lw=0.9, where="post",
+            label="galat 0-1")
+    ax.plot(m, np.logaddexp(0, -m) / np.log(2), color=BIRU, lw=1.2,
+            label="logistik $/ \\log 2$")
+    ax.plot(m, np.maximum(0, 1 - m), color=HIJAU, lw=1.0, ls="--",
+            label="hinge (SVM)")
+    ax.plot(m, np.exp(-m), color=JINGGA, lw=1.0, ls=":",
+            label="eksponensial (AdaBoost)")
+    ax.set_ylim(0, 4)
+    ax.axvline(0, color=ABU_GARIS, lw=0.5)
+    ax.set_xlabel("margin $m = s\\,z$")
+    ax.set_ylabel("loss")
+    ax.legend(fontsize=5.5)
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-margin")
+
+
+def bab05_jujur():
+    q = np.linspace(0.002, 0.998, 500)
+    ps = 0.3
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    kurva = (
+        ("log-loss", -(ps * np.log(q) + (1 - ps) * np.log(1 - q)), BIRU,
+         "-"),
+        ("kuadrat galat", ps * (1 - q) ** 2 + (1 - ps) * q ** 2, MERAH,
+         "--"),
+        ("galat mutlak", ps * (1 - q) + (1 - ps) * q, JINGGA, ":"),
+    )
+    for nama, h, w, gaya in kurva:
+        ax.plot(q, h / h.min(), color=w, lw=1.1, ls=gaya, label=nama)
+        ax.plot([q[np.argmin(h)]], [1], "o", ms=3, color=w)
+    ax.axvline(ps, color=ABU_GARIS, lw=0.5)
+    ax.set_ylim(0.9, 2.6)
+    ax.set_xlabel("peluang jawaban model $q$  ($p^* = 0{,}3$)")
+    ax.set_ylabel("harapan loss / minimumnya")
+    ax.legend(fontsize=5.5, loc="upper center")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-jujur")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

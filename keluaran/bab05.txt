@@ -1,0 +1,73 @@
+# Blok keluaran yang tercetak di Bab 5 (bab05-kemungkinan.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab05_*.py.
+
+=== blok 1 ===
+   b        w      kemungkinan   log-kemungkinan
+ 0.0000  0.0000   1.5259e-05    -11.0904
+-2.0000  0.3000   2.4593e-04     -8.3105
+-5.0000  1.0000   2.9367e-04     -8.1330
+-3.5903  0.6393   6.4699e-04     -7.3432
+
+=== blok 2 ===
+grid 901 x 851: maks -7.3432 di b = -3.58, w = 0.638
+statsmodels   : llf  -7.3432 di b = -3.5903, w = 0.6393
+
+=== blok 3 ===
+log_loss_kita         = 0.458948
+sklearn log_loss      = 0.458948
+-llf / n (statsmodels)= 0.458948
+baseline (p = rata-rata y = 0.5000): log-loss = 0.693147
+log 2 = 0.693147, -log(eps) = 36.0437
+
+=== blok 4 ===
+skor ekstrem, label 0 dan skor z:
+  z =   10: kita  10.0000  polos  10.0000  sklearn 10.0000
+  z =   40: kita  40.0000  polos      inf  sklearn 36.0437
+  z =  800: kita 800.0000  polos      inf  sklearn 36.0437
+
+=== blok 5 ===
+(1) label 0, gradien terhadap z:
+     z   log-loss  kuadrat
+     0   0.50000  0.25000
+     2   0.88080  0.18496
+     5   0.99331  0.01321
+    10   0.99995  0.00009
+
+=== blok 6 ===
+  awal (10.0, -2.0), log-loss:
+    langkah      0: loss 4.3713, b =  10.000, w = -2.000
+    langkah   1000: loss 0.5664, b =  -0.784, w =  0.206
+    langkah  20000: loss 0.4589, b =  -3.590, w =  0.639
+    langkah 100000: loss 0.4589, b =  -3.590, w =  0.639
+  awal (10.0, -2.0), kuadrat :
+    langkah      0: loss 0.6870, b =  10.000, w = -2.000
+    langkah   1000: loss 0.4985, b =  10.051, w = -0.714
+    langkah  20000: loss 0.4974, b =   9.079, w = -0.649
+    langkah 100000: loss 0.1543, b =  -2.991, w =  0.546
+  (10, -2) log-loss: dalam 1% dari minimum pada langkah 2171
+  (10, -2) kuadrat : dalam 1% dari minimum pada langkah 48166
+
+=== blok 7 ===
+(3) nilai eigen terkecil Hessian:
+  (b, w) = (   0,   0): log-loss +0.05026, kuadrat +0.02513
+  (b, w) = (   4,  -1): log-loss +0.01136, kuadrat -0.37847
+  (b, w) = (  10,  -2): log-loss +0.00155, kuadrat -0.00925
+
+=== blok 8 ===
+(1) maks selisih kedua bentuk = 1.7e-15
+
+=== blok 9 ===
+(2)    m    0-1  logistik  logistik/log2   hinge  eksponen
+      -2      1    2.1269         3.0685    3.00    7.3891
+      -1      1    1.3133         1.8946    2.00    2.7183
+       0      1    0.6931         1.0000    1.00    1.0000
+       1      0    0.3133         0.4519    0.00    0.3679
+       2      0    0.1269         0.1831    0.00    0.1353
+       5      0    0.0067         0.0097    0.00    0.0067
+
+=== blok 10 ===
+(3) p* = 0.3: q yang meminimumkan harapan loss
+    log-loss: q = 0.3000, harapan minimum 0.6109
+    kuadrat : q = 0.3000, harapan minimum 0.2100
+    mutlak  : q = 0.0005, harapan minimum 0.3002
+    entropi H(0.3) = 0.6109
