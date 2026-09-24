@@ -1365,7 +1365,7 @@ def bab14_batas():
         ax.set_title(judul, fontsize=6)
     X, y = bulan(200)
     for ax, pen, judul in ((axs[2], False, "bulan, derajat 9"),
-                           (axs[3], True, "derajat 9 + penalti")):
+                           (axs[3], True, "derajat 9, penalti CV")):
         m = polinomial(9, pen).fit(X, y)
         _kontur_model(ax, lambda Z: m.predict_proba(Z)[:, 1], X, y,
                       (-2, 3))
@@ -1390,7 +1390,7 @@ def bab14_derajat():
             hasil[pen].append(log_loss(yu, m.predict_proba(Xu)))
     fig, ax = plt.subplots(figsize=(4.0, 2.0))
     ax.plot(ds, hasil[False], "-o", ms=2.5, color=MERAH, lw=1.0,
-            label="tanpa penalti")
+            label="penalti sangat lemah, $C = 10^4$")
     ax.plot(ds, hasil[True], "-o", ms=2.5, color=BIRU, lw=1.0,
             label="penalti L2, $C$ dari validasi silang")
     ax.set_ylim(0.2, 1.3)

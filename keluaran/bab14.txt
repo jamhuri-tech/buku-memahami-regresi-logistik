@@ -8,20 +8,21 @@ bentuk u: n = 300, kelas 1 = 188
 
 === blok 2 ===
 (1) cincin, log-loss uji model sebenarnya 0.150
-    derajat 1, tanpa penalti: 0.546
-    derajat 2, tanpa penalti: 0.162
-    derajat 3, tanpa penalti: 0.173
-    derajat 6, tanpa penalti: 0.466
+    derajat  C = 1e4   fitur latih
+        1    0.546   tumpang tindih
+        2    0.162   tumpang tindih
+        3    0.173   tumpang tindih
+        6    0.352   lengkap
 
 === blok 3 ===
 (2) bulan, log-loss uji:
-    derajat  tanpa penalti  penalti CV   C terpilih
-        1          0.335       0.337   1
-        2          0.337       0.344   0.316228
-        3          0.326       0.258   100
-        4          0.372       0.252   10
-        6          0.749       0.263   10
-        9          1.222       0.261   3.16228
+    derajat  C = 1e4  penalti CV  C terpilih  fitur latih
+        1    0.335    0.337     1          tumpang tindih
+        2    0.337    0.344     0.316      tumpang tindih
+        3    0.327    0.258     100        tumpang tindih
+        4    0.362    0.252     10         tumpang tindih
+        6    0.663    0.263     10         tumpang tindih
+        9    1.027    0.261     3.16       lengkap
 
 === blok 4 ===
 (3) bentuk U, log-loss uji: sebenarnya 0.468
@@ -37,7 +38,7 @@ bentuk u: n = 300, kelas 1 = 188
 
 === blok 6 ===
 (2) data bulan, kernel RBF, gamma = 1, C = 1:
-    SVC      : akurasi 0.9092, log-loss (Platt) 0.2498
-    logistik : akurasi 0.9038, log-loss 0.2924
+    SVC      : akurasi 0.909, log-loss (Platt) 0.2498
+    logistik : akurasi 0.904, log-loss 0.2924
     vektor pendukung SVC: 63 dari 200
     koefisien a_i logistik yang |a_i| < 1e-6: 0 dari 200

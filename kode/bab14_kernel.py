@@ -66,10 +66,10 @@ if __name__ == "__main__":
     svm = SVC(kernel="rbf", gamma=GAMMA, C=C, probability=True,
               random_state=0).fit(X, y)
     print("(2) data bulan, kernel RBF, gamma = 1, C = 1:")
-    print(f"    SVC      : akurasi {accuracy_score(yu, svm.predict(Xu)):.4f}"
+    print(f"    SVC      : akurasi {accuracy_score(yu, svm.predict(Xu)):.3f}"
           f", log-loss (Platt) "
           f"{log_loss(yu, svm.predict_proba(Xu)):.4f}")
-    print(f"    logistik : akurasi {accuracy_score(yu, p_kita > 0.5):.4f}"
+    print(f"    logistik : akurasi {accuracy_score(yu, p_kita > 0.5):.3f}"
           f", log-loss {log_loss(yu, p_kita):.4f}")
     print(f"    vektor pendukung SVC: {len(svm.support_)} dari {len(y)}")
     print(f"    koefisien a_i logistik yang |a_i| < 1e-6: "
