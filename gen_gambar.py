@@ -1138,6 +1138,88 @@ def bab11_dini():
     simpan(fig, "bab11-dini")
 
 
+
+# ============================ Bab 12 =================================
+
+def bab12_profil():
+    from bab04_data import jam_belajar
+    from bab06_turunan import rancang
+    from bab12_inferensi import (KRITIS, galat_baku, log_kem, mle,
+                                 profil, selang_profil)
+    x, y = jam_belajar()
+    X, y = rancang(x), y.astype(float)
+    theta, H = mle(X, y)
+    se = galat_baku(H)[1]
+    l_maks = log_kem(theta, X, y)
+    ws = np.linspace(-0.3, 2.0, 120)
+    dev = [2 * (l_maks - profil(X, y, 1, w, theta)) for w in ws]
+    fig, ax = plt.subplots(figsize=(4.0, 2.3))
+    ax.plot(ws, dev, color=BIRU, lw=1.2, label="profil")
+    ax.plot(ws, ((ws - theta[1]) / se) ** 2, color=MERAH, lw=0.9,
+            ls="--", label="hampiran kuadratik (Wald)")
+    ax.axhline(KRITIS, color=ABU, lw=0.6, ls=":")
+    ax.text(-0.28, KRITIS + 0.25, r"$\chi^2_{1;\,0{,}95} = 3{,}84$",
+            fontsize=5.5, color=ABU)
+    lo, hi = selang_profil(X, y, 1, theta, se)
+    for v, w, g in ((lo, BIRU, "-"), (hi, BIRU, "-"),
+                    (theta[1] - 1.96 * se, MERAH, "--"),
+                    (theta[1] + 1.96 * se, MERAH, "--")):
+        ax.plot([v, v], [0, KRITIS], color=w, lw=0.6, ls=g)
+    ax.set_ylim(0, 9)
+    ax.set_xlabel("bobot $w$ jam belajar")
+    ax.set_ylabel(r"$2(\ell_{\max} - \ell_{\mathrm{profil}}(w))$")
+    ax.legend(fontsize=5.5, loc="upper center")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab12-profil")
+
+
+def bab12_hauck():
+    from scipy.stats import chi2
+    from bab12_hauck import statistik
+    ws = np.linspace(0.05, 12, 400)
+    S = np.array([statistik(w) for w in ws])
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    ax.plot(ws, S[:, 0] ** 2, color=MERAH, lw=1.1, label="Wald $z^2$")
+    ax.plot(ws, S[:, 1], color=BIRU, lw=1.1,
+            label="rasio kemungkinan $G$")
+    ax.axhline(chi2.ppf(0.95, 1), color=ABU, lw=0.6, ls=":")
+    ax.set_ylim(0, 55)
+    ax.set_xlabel("$w$ sebenarnya (data harapan, $n = 40$)")
+    ax.set_ylabel("statistik uji $w = 0$")
+    ax.legend(fontsize=5.5, loc="upper left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab12-hauck")
+
+
+def bab12_sebaran():
+    from bab04_data import BENIH, jam_belajar
+    from bab06_turunan import rancang
+    from bab12_simulasi import skenario
+    rng = np.random.default_rng(BENIH)
+    x, _ = jam_belajar()
+    daftar = [("jam belajar, $n = 16$", rancang(x),
+               np.array([-3.5903, 0.6393]), (0, 3)),
+              ("garis, $n = 40$", rancang(np.linspace(-2, 2, 40)),
+               np.array([0.0, 3.0]), (0, 12))]
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0))
+    for ax, (nama, X, benar, rentang) in zip(axs, daftar):
+        c = skenario(X, benar, 1, 1000, rng)
+        tepi = np.linspace(*rentang, 40)
+        ax.hist(np.clip(c["mle"], *rentang), bins=tepi, color=BIRU_MUDA,
+                edgecolor=BIRU, lw=0.4, label="MLE")
+        ax.hist(np.clip(c["firth"], *rentang), bins=tepi,
+                histtype="step", color=MERAH, lw=0.9, label="Firth")
+        ax.axvline(benar[1], color=HIJAU, lw=0.9)
+        ax.set_xlabel("taksiran $w$")
+        ax.set_title(nama)
+        _rapikan(ax)
+    axs[0].legend(fontsize=5.5, loc="upper right")
+    fig.tight_layout()
+    simpan(fig, "bab12-sebaran")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

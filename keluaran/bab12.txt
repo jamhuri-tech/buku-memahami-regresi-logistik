@@ -1,0 +1,50 @@
+# Blok keluaran yang tercetak di Bab 12 (bab12-inferensi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab12_*.py.
+
+=== blok 1 ===
+(1) galat baku kita  : b 1.8387, w 0.3109
+    galat baku sm    : b 1.8387, w 0.3109
+    korelasi taksiran b dan w: -0.936
+
+=== blok 2 ===
+(2) Wald w: z = 2.0561, nilai-p = 0.0398; sm: 2.0561, 0.0398
+(3) rasio kemungkinan: G = 7.4944, nilai-p = 0.0062
+    sm: llr = 7.4944, nilai-p = 0.0062
+    deviance -2 l = 14.6863; sm GLM 14.6863
+    deviance null -2 l0 = 22.1807; sm GLM 22.1807
+
+=== blok 3 ===
+(4) selang Wald w   : [0.0299, 1.2488]; sm [0.0299, 1.2488]
+    selang profil w : [0.1522, 1.4536]
+    odds ratio per jam 1.895:
+      Wald [1.030, 3.486], profil [1.164, 4.279]
+
+=== blok 4 ===
+jam belajar, n = 16 (1000 ulangan), w benar = 0.6393:
+  terpisah 0.088; cakupan Wald 0.975, profil 0.985
+  Wald meleset: di bawah w 0.025, di atas w 0.000
+  rata-rata w: MLE 0.805, Firth 0.646
+garis, n = 40, w = 3 (1000 ulangan), w benar = 3:
+  terpisah 0.021; cakupan Wald 0.970, profil 0.946
+  Wald meleset: di bawah w 0.030, di atas w 0.000
+  rata-rata w: MLE 3.787, Firth 3.017
+dua peubah, n = 200 (1000 ulangan), w benar = 2:
+  terpisah 0.000; cakupan Wald 0.949, profil 0.946
+  Wald meleset: di bawah w 0.024, di atas w 0.027
+  rata-rata w: MLE 2.072, Firth 2.009
+
+=== blok 5 ===
+   w    Wald z^2   G (rasio kemungkinan)
+  0.5       3.01        3.25
+  1.0       8.19       10.70
+  2.0      11.74       25.33
+  4.0       7.91       39.44
+  6.0       5.34       44.76
+  8.0       4.01       47.43
+ 10.0       3.21       49.04
+Wald z^2 terbesar 11.76 di w = 1.91
+
+=== blok 6 ===
+(5) Firth, jam terpisah: b = -9.2716, w = 1.6788
+    titik setengah 5.523
+    Firth, jam belajar : b = -2.7946, w = 0.4951
