@@ -27,7 +27,7 @@ def ista(X, y, C, langkah):
     for _ in range(langkah):
         g = C * Xt.T @ (expit(Xt @ theta) - y)
         theta = theta - eta * g
-        theta[1:] = lunak(theta[1:], eta)      # intersep tak disentuh
+        theta[1:] = lunak(theta[1:], eta)   # b tetap
     return theta
 
 
@@ -58,6 +58,6 @@ if __name__ == "__main__":
         t = ista(X, y, C, langkah)
         beda = np.abs(t - t_sk).max()
         teks = f"{beda:.1e}" if beda > 1e-8 else "< 1e-8"
-        print(f"(2) ISTA {langkah:4d} langkah: maks |beda dengan saga| "
-              f"{teks}, bukan nol {int((np.abs(t[1:]) > 0).sum())}")
+        print(f"(2) ISTA {langkah:4d} langkah: selisih {teks}, "
+              f"bukan nol {int((np.abs(t[1:]) > 0).sum())}")
     print(f"    saga: bukan nol {int((np.abs(m.coef_) > 0).sum())}")

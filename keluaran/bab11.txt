@@ -1,0 +1,64 @@
+# Blok keluaran yang tercetak di Bab 11 (bab11-regularisasi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab11_*.py.
+
+=== blok 1 ===
+latih: (100, 50), kelas 1 = 51
+uji  : (10000, 50), kelas 1 = 4974
+
+=== blok 2 ===
+data latih: n = 100, d = 50, lengkap terpisah
+tanpa penalti: log-loss uji 5.864, maks |w| = 17.1
+model sebenarnya: log-loss uji 0.325
+
+=== blok 3 ===
+L2 terbaik: C = 0.1, log-loss uji 0.565, latih 0.322
+    bobot bukan nol 50, dari lima peubah penting terpilih 5
+L1 terbaik: C = 0.316, log-loss uji 0.466, latih 0.332
+    bobot bukan nol 19, dari lima peubah penting terpilih 5
+
+=== blok 4 ===
+(1) C_nol = 1 / max_j |sum (y - ybar) x_j| = 0.05383
+    dicapai oleh peubah ke-19
+    C = 0.99 C_nol: bobot bukan nol []
+    C = 1.01 C_nol: bobot bukan nol [19]
+    C = 1.20 C_nol: bobot bukan nol [1, 19]
+
+=== blok 5 ===
+(2) ISTA   30 langkah: selisih 2.2e-02, bukan nol 18
+(2) ISTA  100 langkah: selisih 7.6e-05, bukan nol 18
+(2) ISTA 1000 langkah: selisih < 1e-8, bukan nol 18
+    saga: bukan nol 18
+
+=== blok 6 ===
+(2) korelasi x1, x2 = 0.992; bobot sebenarnya lewat z
+    l2        : w = (0.503, 0.553, 0.051)
+    l1        : w = (0.000, 0.776, 0.000)
+    elasticnet: w = (0.413, 0.509, 0.000)
+
+=== blok 7 ===
+(1) LogisticRegressionCV, 5 lipatan, 21 nilai C:
+    skor      pen  C        log-loss uji  akurasi uji
+    akurasi   l2   0.00562  0.651         0.677
+    akurasi   l1   0.178    0.496         0.782
+    log-loss  l2   0.0562   0.570         0.697
+    log-loss  l1   0.316    0.466         0.777
+
+=== blok 8 ===
+(3) penalti L2, C = 0.05, data dua peubah:
+    x1 asli : w1 (satuan asli) = 0.8182, w2 = -0.5690
+      dibakukan: p(3 titik pertama) = [0.7008 0.4217 0.4009]
+    x1 x 100: w1 (satuan asli) = 1.5154, w2 = -0.6602
+      dibakukan: p(3 titik pertama) = [0.7008 0.4217 0.4009]
+
+=== blok 9 ===
+(1) data jarang: langkah GD terbaik 3, log-loss uji 0.572
+    sesudah 3000 langkah: log-loss uji 3.504
+
+=== blok 10 ===
+(2) dua peubah: jarak lintasan GD ke jalur L2
+    langkah   ||w||   jarak ke jalur L2
+         1   1.023   0.0941
+         5   1.773   0.0216
+        20   2.073   0.0007
+       100   2.083   0.0002
+       400   2.083   0.0002

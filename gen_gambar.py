@@ -997,6 +997,147 @@ def bab10_newton():
     simpan(fig, "bab10-newton")
 
 
+
+# ============================ Bab 11 =================================
+
+_JALUR11 = {}
+
+
+def _jalur11():
+    if not _JALUR11:
+        from bab11_data import data_jarang
+        from bab11_jalur import jalur
+        _JALUR11.update(jalur(*data_jarang()))
+    return _JALUR11
+
+
+def bab11_kurva():
+    from scipy.special import expit
+    from sklearn.metrics import log_loss
+    from bab11_data import W_JARANG, data_jarang
+    hasil = _jalur11()
+    _, _, Xu, yu = data_jarang()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0), sharey=True)
+    for ax, pen, judul in zip(axs, ("l2", "l1"), ("penalti L2",
+                                                  "penalti L1")):
+        c = hasil[pen]
+        Cs = [r["C"] for r in c]
+        ax.semilogx(Cs, [r["latih"] for r in c], color=ABU, lw=1.0,
+                    label="latih")
+        ax.semilogx(Cs, [r["uji"] for r in c], color=BIRU, lw=1.2,
+                    label="uji")
+        k = int(np.argmin([r["uji"] for r in c]))
+        ax.plot([Cs[k]], [c[k]["uji"]], "o", ms=3.5, color=MERAH)
+        ax.axhline(log_loss(yu, expit(Xu @ W_JARANG)), color=HIJAU,
+                   lw=0.6, ls="--")
+        ax.set_ylim(0, 1.6)
+        ax.set_xlabel("$C$")
+        ax.set_title(judul)
+        kunci_label(ax, "x")
+        _rapikan(ax)
+    axs[0].set_ylabel("log-loss")
+    axs[0].legend(fontsize=5.5, loc="upper left")
+    fig.tight_layout()
+    simpan(fig, "bab11-kurva")
+
+
+def bab11_jalur():
+    hasil = _jalur11()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.2), sharey=True)
+    warna5 = [BIRU, MERAH, HIJAU, JINGGA, "#6B4C9A"]
+    for ax, pen, judul in zip(axs, ("l2", "l1"), ("L2", "L1")):
+        c = hasil[pen]
+        Cs = [r["C"] for r in c]
+        W = np.array([r["coef"] for r in c])
+        for j in range(5, W.shape[1]):
+            ax.semilogx(Cs, W[:, j], color=ABU_GARIS, lw=0.5)
+        for j in range(5):
+            ax.semilogx(Cs, W[:, j], color=warna5[j], lw=1.1)
+        k = int(np.argmin([r["uji"] for r in c]))
+        ax.axvline(Cs[k], color=ABU, lw=0.5, ls="--")
+        ax.set_ylim(-4, 4)
+        ax.set_xlabel("$C$")
+        ax.set_title(f"jalur bobot, penalti {judul}")
+        kunci_label(ax, "x")
+        _rapikan(ax)
+    axs[0].set_ylabel("bobot")
+    fig.tight_layout()
+    simpan(fig, "bab11-jalur")
+
+
+def bab11_geometri():
+    import warnings
+    from sklearn.linear_model import LogisticRegression
+    from bab04_data import dua_peubah
+    X, y = dua_peubah()
+    Cs = np.geomspace(1e-3, 10, 80)
+    jalur = {"l2": [], "l1": []}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for C in Cs:
+            for pen in jalur:
+                m = LogisticRegression(penalty=pen, C=C, solver="saga",
+                                       tol=1e-8, max_iter=100_000,
+                                       random_state=0).fit(X, y)
+                jalur[pen].append(m.coef_[0].copy())
+        b0 = LogisticRegression(penalty=None).fit(X, y).intercept_[0]
+    W1, W2 = np.meshgrid(np.linspace(-0.3, 2.2, 300),
+                         np.linspace(-1.5, 0.3, 300))
+    Z = b0 + W1[..., None] * X[:, 0] + W2[..., None] * X[:, 1]
+    L = np.mean(np.logaddexp(0, Z) - y * Z, axis=-1)
+    fig, ax = plt.subplots(figsize=(4.0, 2.7))
+    ax.contour(W1, W2, L, levels=L.min() + np.array([.005, .02, .05, .1,
+                                                    .2, .35]),
+               colors=ABU_GARIS, linewidths=0.5)
+    for r in (0.4, 0.8):
+        ax.plot([r, 0, -r, 0, r], [0, r, 0, -r, 0], color=MERAH, lw=0.5,
+                ls=":")
+        s = np.linspace(0, 2 * np.pi, 200)
+        ax.plot(r * np.cos(s), r * np.sin(s), color=BIRU, lw=0.5, ls=":")
+    for pen, w, nama in (("l2", BIRU, "jalur L2"), ("l1", MERAH,
+                                                   "jalur L1")):
+        J = np.array(jalur[pen])
+        ax.plot(J[:, 0], J[:, 1], color=w, lw=1.3, label=nama)
+    ax.plot([0], [0], "o", ms=2.5, color=ABU)
+    ax.set_aspect("equal")
+    ax.set_xlim(-0.3, 2.2)
+    ax.set_ylim(-1.5, 0.3)
+    ax.set_xlabel("$w_1$")
+    ax.set_ylabel("$w_2$")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab11-geometri")
+
+
+def bab11_dini():
+    from scipy.special import expit
+    from sklearn.metrics import log_loss
+    from bab06_turunan import rancang
+    from bab11_data import data_jarang
+    from bab11_dini import lintasan_gd
+    X, y, Xu, yu = data_jarang()
+    jalur = lintasan_gd(X, y, 3000)
+    uji = [log_loss(yu, expit(rancang(Xu) @ t)) for t in jalur]
+    latih = [log_loss(y, expit(rancang(X) @ t)) for t in jalur]
+    hasil = _jalur11()
+    terbaik_l2 = min(r["uji"] for r in hasil["l2"])
+    fig, ax = plt.subplots(figsize=(4.0, 2.1))
+    k = np.arange(1, len(jalur) + 1)
+    ax.semilogx(k, latih, color=ABU, lw=1.0, label="latih")
+    ax.semilogx(k, uji, color=BIRU, lw=1.2, label="uji")
+    ax.axhline(terbaik_l2, color=MERAH, lw=0.7, ls="--",
+               label="L2 terbaik (uji)")
+    ax.set_ylim(0, 2)
+    ax.set_xlabel("langkah gradient descent")
+    ax.set_ylabel("log-loss")
+    ax.legend(fontsize=5.5, loc="upper left")
+    kunci_label(ax, "x")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab11-dini")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

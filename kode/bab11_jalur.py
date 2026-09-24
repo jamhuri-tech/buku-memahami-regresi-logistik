@@ -44,7 +44,8 @@ if __name__ == "__main__":
     print(f"data latih: n = {len(y)}, d = {X.shape[1]}, "
           f"{pemisahan(X, y)} terpisah")
     m = LogisticRegression(penalty=None, max_iter=10_000).fit(X, y)
-    print(f"tanpa penalti: log-loss uji {log_loss(yu, m.predict_proba(Xu)):.3f}"
+    ll = log_loss(yu, m.predict_proba(Xu))
+    print(f"tanpa penalti: log-loss uji {ll:.3f}"
           f", maks |w| = {np.abs(m.coef_).max():.1f}")
     print(f"model sebenarnya: log-loss uji "
           f"{log_loss(yu, expit(Xu @ W_JARANG)):.3f}")

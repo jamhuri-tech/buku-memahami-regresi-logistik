@@ -22,5 +22,5 @@ def data_jarang(n_latih=100, n_uji=10_000, benih=BENIH):
 
 if __name__ == "__main__":
     X, y, Xu, yu = data_jarang()
-    print(f"latih: {X.shape}, kelas 1 = {y.sum()}; "
-          f"uji: {Xu.shape}, kelas 1 = {yu.sum()}")
+    print(f"latih: {X.shape}, kelas 1 = {y.sum()}")
+    print(f"uji  : {Xu.shape}, kelas 1 = {yu.sum()}")
