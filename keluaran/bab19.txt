@@ -1,0 +1,61 @@
+# Blok keluaran yang tercetak di Bab 19 (bab19-studikasus.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab19_*.py.
+
+=== blok 1 ===
+baris mentah 303, nilai hilang 6, tersisa 297
+sakit 137 (0.461)
+
+=== blok 2 ===
+nyeri:
+    angina khas      n =  23, proporsi sakit 0.304
+    angina tak khas  n =  49, proporsi sakit 0.184
+    bukan angina     n =  83, proporsi sakit 0.217
+    tanpa gejala     n = 142, proporsi sakit 0.725
+thal:
+    cacat pulih      n = 115, proporsi sakit 0.765
+    cacat tetap      n =  18, proporsi sakit 0.667
+    normal           n = 164, proporsi sakit 0.226
+
+=== blok 3 ===
+pemisahan: tumpang tindih; n = 297, parameter 19
+
+=== blok 4 ===
+peubah                         OR     selang 95%
+nyeri: angina khas             0.12   [ 0.03,   0.46]
+nyeri: angina tak khas         0.43   [ 0.14,   1.29]
+nyeri: bukan angina            0.16   [ 0.06,   0.42]
+ekg: hipertrofi                1.61   [ 0.76,   3.41]
+ekg: kelainan ST-T             2.25   [ 0.02, 265.85]
+lereng_st: datar               3.17   [ 1.25,   8.04]
+lereng_st: turun               1.69   [ 0.28,  10.25]
+thal: cacat pulih              4.03   [ 1.75,   9.26]
+thal: cacat tetap              0.99   [ 0.21,   4.65]
+usia / 10                      0.87   [ 0.54,   1.42]
+pria                           4.69   [ 1.66,  13.26]
+tensi / 10                     1.28   [ 1.02,   1.59]
+kolesterol / 50                1.25   [ 0.84,   1.85]
+gula                           0.55   [ 0.17,   1.81]
+nadi_maks / 10                 0.84   [ 0.67,   1.04]
+angina_latih                   2.03   [ 0.86,   4.82]
+depresi_st                     1.43   [ 0.91,   2.25]
+pembuluh                       3.71   [ 2.15,   6.42]
+
+=== blok 5 ===
+uji rasio kemungkinan per kelompok kategori:
+    nyeri      G =  19.15, db 3, nilai-p 0.0003
+    ekg        G =   1.60, db 2, nilai-p 0.4495
+    lereng_st  G =   6.32, db 2, nilai-p 0.0424
+    thal       G =  12.29, db 2, nilai-p 0.0021
+
+=== blok 6 ===
+latih 207 (sakit 0.459), uji 90 (sakit 0.467)
+model           C       log-loss  Brier   AUC     ECE
+proporsi latih  -       0.6910    0.2489  0.5000  0.0077
+tanpa penalti   -       0.4784    0.1537  0.8943  0.1165
+L2, C dari CV   0.316   0.4552    0.1526  0.8814  0.1080
+L1, C dari CV   0.562   0.4637    0.1551  0.8795  0.1201
+L1: 6 dari 18 bobot tepat nol
+
+=== blok 7 ===
+L2, ambang 0.500: TP 35 FP 13 TN 35 FN  7, biaya 0.533
+L2, ambang 0.167: TP 40 FP 34 TN 14 FN  2, biaya 0.489

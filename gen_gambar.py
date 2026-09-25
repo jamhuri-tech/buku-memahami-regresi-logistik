@@ -1787,6 +1787,93 @@ def bab18_jumlah():
     simpan(fig, "bab18-jumlah")
 
 
+
+# ============================ Bab 19 =================================
+
+def bab19_eksplor():
+    from bab19_data import baca_jantung
+    d = baca_jantung()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0), sharey=True)
+    for ax, k in zip(axs, ("nyeri", "thal")):
+        t = d.groupby(k).sakit.agg(["count", "mean"])
+        ax.bar(range(len(t)), t["mean"], color=BIRU_MUDA, edgecolor=BIRU,
+               lw=0.6)
+        for i, (n, m) in enumerate(zip(t["count"], t["mean"])):
+            ax.text(i, m + 0.02, f"n = {n}", ha="center", fontsize=5.5)
+        ax.set_xticks(range(len(t)))
+        ax.set_xticklabels(t.index, fontsize=5.5, rotation=15)
+        kunci_label(ax, "x")
+        ax.axhline(d.sakit.mean(), color=ABU, lw=0.5, ls="--")
+        ax.set_title(k, fontsize=7)
+        _rapikan(ax)
+    axs[0].set_ylabel("proporsi sakit")
+    fig.tight_layout()
+    simpan(fig, "bab19-eksplor")
+
+
+def bab19_or():
+    import statsmodels.formula.api as smf
+    from bab19_data import baca_jantung
+    from bab19_inferensi import RUMUS, nama_pendek
+    h = smf.logit(RUMUS, baca_jantung()).fit(disp=0)
+    ci = h.conf_int()
+    nama = [k for k in h.params.index[1:]]
+    urut = np.argsort([h.params[k] for k in nama])
+    fig, ax = plt.subplots(figsize=(4.3, 3.2))
+    for j, i in enumerate(urut):
+        k = nama[i]
+        lo, hi = np.exp(ci.loc[k, 0]), np.exp(ci.loc[k, 1])
+        ax.plot([max(lo, 0.02), min(hi, 50)], [j, j], color=ABU, lw=0.9)
+        ax.plot(np.exp(h.params[k]), j, "o", ms=3,
+                color=MERAH if (lo > 1 or hi < 1) else BIRU)
+    ax.axvline(1, color=ABU_GARIS, lw=0.6, ls="--")
+    ax.set_xscale("log")
+    ax.set_xlim(0.02, 50)
+    ax.set_yticks(range(len(nama)))
+    ax.set_yticklabels([nama_pendek(nama[i]) for i in urut], fontsize=5.5)
+    ax.set_xlabel("odds ratio (selang Wald 95 persen, sumbu logaritmik)")
+    kunci_label(ax, "x", "y")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab19-or")
+
+
+def bab19_uji():
+    from sklearn.metrics import roc_curve
+    from bab19_prediksi import CS, bagi, model
+    from sklearn.linear_model import LogisticRegressionCV
+    Xl, Xu, yl, yu = bagi()
+    m = model(LogisticRegressionCV(Cs=CS, cv=5, scoring="neg_log_loss",
+                                   max_iter=10_000)).fit(Xl, yl)
+    p = m.predict_proba(Xu)[:, 1]
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    fpr, tpr, _ = roc_curve(yu, p)
+    a.plot(fpr, tpr, color=BIRU, lw=1.1)
+    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    a.set_aspect("equal")
+    a.set_xlabel("FPR")
+    a.set_ylabel("TPR")
+    a.set_title("ROC, data uji", fontsize=7)
+    kotak = np.minimum((p * 5).astype(int), 4)
+    xs = [p[kotak == j].mean() for j in range(5) if np.any(kotak == j)]
+    ys = [yu[kotak == j].mean() for j in range(5) if np.any(kotak == j)]
+    ns = [np.sum(kotak == j) for j in range(5) if np.any(kotak == j)]
+    b.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    b.plot(xs, ys, "-o", color=BIRU, lw=1.0, ms=2.5)
+    for x, yv, n in zip(xs, ys, ns):
+        b.text(x + 0.02, yv - 0.07, f"{n}", fontsize=5.5, color=ABU)
+    b.set_aspect("equal")
+    b.set_xlim(0, 1)
+    b.set_ylim(0, 1)
+    b.set_xlabel("peluang model")
+    b.set_ylabel("proporsi sakit")
+    b.set_title("reliabilitas, data uji", fontsize=7)
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab19-uji")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
