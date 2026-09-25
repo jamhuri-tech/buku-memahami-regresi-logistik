@@ -1457,6 +1457,79 @@ def bab14_svm():
     simpan(fig, "bab14-svm")
 
 
+
+# ============================ Bab 15 =================================
+
+def bab15_sebaran():
+    from bab15_data import latih_pasien
+    _, y, p = latih_pasien()
+    tepi = np.linspace(0, 1, 41)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.hist(p[y == 0], bins=tepi, color=JINGGA_MUDA, edgecolor=JINGGA,
+            lw=0.4, label="sehat ($y = 0$)")
+    ax.hist(p[y == 1], bins=tepi, histtype="step", color=BIRU, lw=1.0,
+            label="sakit ($y = 1$)")
+    for t, nama in ((0.5, "0,5"), (1 / 6, "1/6")):
+        ax.axvline(t, color=MERAH, lw=0.7, ls="--")
+        ax.text(t + 0.01, ax.get_ylim()[1] * 0.85, nama, fontsize=5.5,
+                color=MERAH)
+    ax.set_xlabel("peluang sakit menurut model")
+    ax.set_ylabel("banyak pasien uji")
+    ax.legend(fontsize=5.5, loc="upper right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab15-sebaran")
+
+
+def bab15_roc():
+    from sklearn.metrics import precision_recall_curve
+    from bab15_data import latih_pasien
+    from bab15_nilai import kurva_roc
+    _, y, p = latih_pasien()
+    _, y2, p2 = latih_pasien(["imt", "perokok", "wilayah"])
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    for yy, pp, w, nama in ((y, p, BIRU, "lengkap"),
+                            (y2, p2, JINGGA, "tanpa usia")):
+        fpr, tpr = kurva_roc(yy, pp)
+        a.plot(fpr, tpr, color=w, lw=1.1, label=nama)
+        pr, rc, _ = precision_recall_curve(yy, pp)
+        b.plot(rc, pr, color=w, lw=1.1, label=nama)
+    k = np.argmin(np.abs(np.sort(p)[::-1] - 0.5))
+    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    a.set_xlabel("FPR = 1 - spesifisitas")
+    a.set_ylabel("TPR = recall")
+    a.set_title("kurva ROC")
+    a.set_aspect("equal")
+    b.axhline(y.mean(), color=ABU_GARIS, lw=0.6, ls="--")
+    b.set_xlabel("recall")
+    b.set_ylabel("precision")
+    b.set_title("kurva precision-recall")
+    b.set_ylim(0, 1.02)
+    a.legend(fontsize=5.5, loc="lower right")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab15-roc")
+
+
+def bab15_biaya():
+    from bab15_ambang import biaya
+    from bab15_data import latih_pasien
+    _, y, p = latih_pasien()
+    ts = np.linspace(0.01, 0.99, 197)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.plot(ts, [biaya(y, p, t) for t in ts], color=BIRU, lw=1.1)
+    ax.axvline(1 / 6, color=MERAH, lw=0.7, ls="--")
+    ax.axvline(0.5, color=ABU, lw=0.6, ls=":")
+    ax.text(1 / 6 + 0.01, 1.0, "$c_{FP}/(c_{FP} + c_{FN})$",
+            fontsize=5.5, color=MERAH)
+    ax.set_xlabel("ambang")
+    ax.set_ylabel("biaya rata-rata per pasien")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab15-biaya")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

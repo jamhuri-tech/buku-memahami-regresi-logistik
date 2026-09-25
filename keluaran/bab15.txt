@@ -1,0 +1,40 @@
+# Blok keluaran yang tercetak di Bab 15 (bab15-menilai.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab15_*.py.
+
+=== blok 1 ===
+latih 3000 (penyakit 0.217), uji 3000 (penyakit 0.214)
+
+=== blok 2 ===
+(1) ambang 0.5: TP 128, FP 61, TN 2298, FN 513
+    sklearn: TP 128, FP 61, TN 2298, FN 513
+    akurasi 0.8087 (sk 0.8087)
+    precision 0.6772 (sk 0.6772)
+    recall 0.1997 (sk 0.1997)
+    spesifisitas 0.9741
+    F1 0.3084 (sk 0.3084)
+    selalu menebak 0: akurasi 0.7863
+
+=== blok 3 ===
+(2) AUC trapesium 0.758893, Mann-Whitney 0.758893
+    sklearn roc_auc_score 0.758893
+    AUC dari p^3     : 0.758893
+    AUC dari log-odds: 0.758893
+    AUC dari p / 10  : 0.758893
+
+=== blok 4 ===
+(3) average precision 0.4990, proporsi kelas 1 0.2137
+    tanpa usia: AUC 0.6771, AP 0.3504
+
+=== blok 5 ===
+(1) biaya FN = 5, FP = 1; ambang teori 0.1667
+    biaya per pasien: ambang 0.5 0.8753, ambang teori 0.5800
+    ambang terbaik pada data uji 0.14, biaya 0.5603
+    selalu negatif 1.0683, selalu positif 0.7863
+
+=== blok 6 ===
+(2) ambang F1 terbesar 0.27 (F1 0.5110); Youden 0.26
+
+=== blok 7 ===
+(3) model lengkap : log-loss 0.4428, Brier 0.1404 (sk 0.1404)
+    tanpa usia    : log-loss 0.4877, Brier 0.1573
+    proporsi uji  : log-loss 0.5188, Brier 0.1680
