@@ -1530,6 +1530,83 @@ def bab15_biaya():
     simpan(fig, "bab15-biaya")
 
 
+
+# ============================ Bab 16 =================================
+
+def _reliabilitas(ax, y, p, warna, nama, k=10):
+    kotak = np.minimum((p * k).astype(int), k - 1)
+    xs, ys, ns = [], [], []
+    for j in range(k):
+        m = kotak == j
+        if m.sum() >= 5:
+            xs.append(p[m].mean())
+            ys.append(y[m].mean())
+            ns.append(m.sum())
+    ax.plot(xs, ys, "-o", color=warna, lw=1.0, ms=2.5, label=nama)
+
+
+def bab16_reliabilitas():
+    import warnings
+    warnings.simplefilter("ignore")
+    from bab15_data import bagi_pasien, model_pasien
+    from bab16_kalibrasi import MODEL, ece
+    latih, uji = bagi_pasien()
+    y = uji.penyakit.to_numpy()
+    fig, axs = plt.subplots(1, 4, figsize=(4.8, 1.55), sharey=True)
+    for ax, (nama, opsi, peubah) in zip(axs, MODEL):
+        m = model_pasien(peubah, **opsi).fit(latih[peubah],
+                                             latih.penyakit)
+        p = m.predict_proba(uji[peubah])[:, 1]
+        ax.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+        _reliabilitas(ax, y, p, BIRU, nama)
+        ax.set_title(nama.replace("0.001", "0{,}001") if False else
+                     nama.replace(".", ","), fontsize=6)
+        ax.text(0.04, 0.88, "ECE " + angka(ece(y, p), 3), fontsize=5.5,
+                color=MERAH)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_aspect("equal")
+        ax.set_xlabel("peluang model", fontsize=5.5)
+        ax.tick_params(labelsize=5)
+        _rapikan(ax)
+    axs[0].set_ylabel("proporsi sakit", fontsize=5.5)
+    fig.tight_layout(pad=0.3)
+    simpan(fig, "bab16-reliabilitas")
+
+
+def bab16_peta():
+    import warnings
+    warnings.simplefilter("ignore")
+    from sklearn.calibration import CalibratedClassifierCV
+    from bab15_data import bagi_pasien, model_pasien
+    from bab16_kalibrasi import MODEL, ece
+    latih, uji = bagi_pasien()
+    y = uji.penyakit.to_numpy()
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    for ax, (nama, opsi, peubah) in zip(axs, (MODEL[2], MODEL[1])):
+        m = model_pasien(peubah, **opsi).fit(latih[peubah],
+                                             latih.penyakit)
+        p = m.predict_proba(uji[peubah])[:, 1]
+        ax.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+        _reliabilitas(ax, y, p, ABU, "asli")
+        for metode, w in (("sigmoid", BIRU), ("isotonic", HIJAU)):
+            c = CalibratedClassifierCV(model_pasien(peubah, **opsi),
+                                       method=metode, cv=5)
+            q = c.fit(latih[peubah], latih.penyakit) \
+                .predict_proba(uji[peubah])[:, 1]
+            _reliabilitas(ax, y, q, w, metode)
+        ax.set_title(nama.replace(".", ","), fontsize=7)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_aspect("equal")
+        ax.set_xlabel("peluang model")
+        _rapikan(ax)
+    axs[0].set_ylabel("proporsi sakit")
+    axs[0].legend(fontsize=5.5, loc="lower right")
+    fig.tight_layout()
+    simpan(fig, "bab16-peta")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

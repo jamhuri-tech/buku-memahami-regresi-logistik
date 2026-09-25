@@ -1,0 +1,34 @@
+# Blok keluaran yang tercetak di Bab 16 (bab16-kalibrasi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab16_*.py.
+
+=== blok 1 ===
+(1) data latih, tol = 1e-10: rata-rata peluang
+    proporsi kelas 1: 0.217000
+    lengkap   : 0.217000
+    C = 0.001 : 0.217000
+    balanced  : 0.448844
+    tanpa usia: 0.217000
+
+=== blok 2 ===
+(2) data uji     rata p   ECE     log-loss  AUC
+    lengkap     0.2111  0.0233  0.4428    0.7589
+    C = 0.001   0.2145  0.0610  0.4829    0.7434
+    balanced    0.4382  0.2247  0.5771    0.7586
+    tanpa usia  0.2167  0.0251  0.4877    0.6771
+
+=== blok 3 ===
+(3) Platt kita untuk model balanced: a = 0.9878, b = -1.2797
+    maks beda dengan CalibratedClassifierCV < 1e-4: True
+
+=== blok 4 ===
+(4) sesudah rekalibrasi (cv = 5):
+    model       sigmoid ECE  log-loss  isotonic ECE  log-loss
+    lengkap      0.0231      0.4430   0.0151      0.4434
+    C = 0.001    0.0225      0.4505   0.0213      0.4505
+    balanced     0.0240      0.4432   0.0169      0.4433
+    tanpa usia   0.0288      0.4882   0.0242      0.4898
+
+=== blok 5 ===
+(5) biaya per pasien pada ambang 1/6:
+    lengkap   : 0.5800, sesudah sigmoid 0.5793
+    balanced  : 0.7043, sesudah sigmoid 0.5747
