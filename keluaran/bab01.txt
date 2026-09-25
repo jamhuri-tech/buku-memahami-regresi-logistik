@@ -1,0 +1,19 @@
+# Blok keluaran yang tercetak di Bab 1 (bab01-mengapa.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab01_*.py.
+
+=== blok 1 ===
+(1) garis kuadrat terkecil pada label 0/1:
+    y = -0.1180 + 0.1087 x
+    x =  0.0:  garis -0.1180   logistik 0.0268
+    x =  1.0:  garis -0.0094   logistik 0.0497
+    x = 11.0:  garis  1.0773   logistik 0.9690
+    x = 15.0:  garis  1.5119   logistik 0.9975
+    x = 20.0:  garis  2.0553   logistik 0.9999
+
+=== blok 2 ===
+(2) titik setengah dan tebakan untuk 6,5 jam:
+    data               model      titik setengah  p(6,5 jam)
+    16 mahasiswa       linear        5.688        0.5883
+                       logistik      5.616        0.6377
+    + 3 belajar lama   linear        6.598        0.4973
+                       logistik      5.616        0.6377

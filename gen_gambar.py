@@ -104,6 +104,118 @@ def _rapikan(ax):
 
 # ============================ Bab 4 ==================================
 
+def bab01_linear():
+    from sklearn.linear_model import LinearRegression, LogisticRegression
+    from bab04_data import jam_belajar
+    x, y = jam_belajar()
+    x2 = np.r_[x, 25.0, 30.0, 35.0]
+    y2 = np.r_[y, 1, 1, 1]
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.1))
+    for ax, (xx, yy), judul, ujung in zip(
+            axs, [(x, y), (x2, y2)],
+            ["16 mahasiswa", "ditambah 3 yang belajar lama"], [14, 37]):
+        lin = LinearRegression().fit(xx[:, None], yy)
+        log = LogisticRegression(penalty=None, tol=1e-10).fit(
+            xx[:, None], yy)
+        g = np.linspace(0, ujung, 400)
+        geser = np.zeros(len(xx))
+        for v in np.unique(xx):
+            i = np.flatnonzero(xx == v)
+            geser[i] = 0.035 * (np.arange(len(i)) - (len(i) - 1) / 2)
+        ax.scatter(xx, yy + geser, s=9,
+                   color=np.where(yy == 1, BIRU, JINGGA), zorder=3)
+        ax.plot(g, lin.predict(g[:, None]), color=MERAH, lw=1.0,
+                label="garis lurus")
+        ax.plot(g, log.predict_proba(g[:, None])[:, 1], color=BIRU,
+                lw=1.1, label="logistik")
+        ax.axhspan(-0.6, 0, color=MERAH_MUDA, lw=0, zorder=0)
+        ax.axhspan(1, 1.6, color=MERAH_MUDA, lw=0, zorder=0)
+        t_lin = (0.5 - lin.intercept_) / lin.coef_[0]
+        t_log = -log.intercept_[0] / log.coef_[0, 0]
+        ax.plot([t_lin], [0.5], "o", ms=3, color=MERAH, zorder=4)
+        ax.plot([t_log], [0.5], "o", ms=3, color=BIRU, zorder=4)
+        ax.set_ylim(-0.35, 1.35)
+        ax.set_xlim(0, ujung)
+        ax.set_xlabel("jam belajar per minggu")
+        ax.set_title(judul)
+        _rapikan(ax)
+    axs[0].set_ylabel("lulus / peluang lulus")
+    axs[0].legend(loc="lower right", fontsize=6)
+    fig.tight_layout()
+    simpan(fig, "bab01-linear")
+
+
+def bab02_lanskap():
+    from bab02_turunan import f, hess_f
+    u = np.linspace(-2, 1.5, 300)
+    v = np.linspace(-1.5, 2, 300)
+    U, V = np.meshgrid(u, v)
+    F = f((U, V))
+    G = U ** 4 - 2 * U ** 2 + V ** 2
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    a.contour(U, V, F, levels=np.linspace(1.6, 9, 12), colors=BIRU,
+              linewidths=0.6)
+    from scipy.optimize import minimize
+    m = minimize(f, [0.0, 0.0]).x
+    a.plot(*m, "o", ms=3, color=MERAH)
+    a.set_title("$f$: Hessian definit positif")
+    uu = np.linspace(-1.6, 1.6, 300)
+    U, V = np.meshgrid(uu, np.linspace(-1.3, 1.3, 300))
+    G = U ** 4 - 2 * U ** 2 + V ** 2
+    b.contour(U, V, G, levels=np.linspace(-0.9, 2.5, 14), colors=BIRU,
+              linewidths=0.6)
+    b.axvspan(-1 / np.sqrt(3), 1 / np.sqrt(3), color=MERAH_MUDA, lw=0,
+              zorder=0)
+    b.plot([-1, 1], [0, 0], "o", ms=3, color=MERAH)
+    b.plot([0], [0], "x", ms=4, color=MERAH)
+    b.set_title("$g$: pelana di pusat")
+    for ax in (a, b):
+        ax.set_xlabel("$u$")
+        ax.set_aspect("equal")
+        _rapikan(ax)
+    a.set_ylabel("$v$")
+    fig.tight_layout()
+    simpan(fig, "bab02-lanskap")
+
+
+def bab02_optim():
+    from bab02_optimasi import T_BINTANG, gd, newton
+    z0 = 1.0
+    zz = np.linspace(-3, 4, 300)
+    s0 = np.log1p(np.exp(z0))
+    s1 = 1 / (1 + np.exp(-z0))
+    s2 = s1 * (1 - s1)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.1))
+    a.plot(zz, np.log1p(np.exp(zz)), color=BIRU, lw=1.1,
+           label="$\\log(1 + e^z)$")
+    a.plot(zz, s0 + s1 * (zz - z0), color=ABU, lw=0.7, ls="--",
+           label="orde satu")
+    a.plot(zz, s0 + s1 * (zz - z0) + s2 * (zz - z0) ** 2 / 2,
+           color=MERAH, lw=0.9, label="orde dua")
+    a.plot([z0], [s0], "o", ms=3, color=MERAH)
+    a.set_ylim(-1, 4.5)
+    a.set_xlabel("$z$")
+    a.set_title("hampiran Taylor di $z_0 = 1$")
+    a.legend(loc="upper left", fontsize=6)
+    k = np.arange(13)
+    ga = np.abs(gd(0.0, 4.0, 12) - T_BINTANG)
+    gb = np.abs(newton(0.0, 12) - T_BINTANG)
+    gb = np.maximum(gb, 1e-17)
+    b.semilogy(k, ga, "o-", ms=2.5, lw=0.8, color=BIRU,
+               label="gradient descent")
+    b.semilogy(k[:5], gb[:5], "s-", ms=2.5, lw=0.8, color=MERAH,
+               label="Newton")
+    b.set_ylim(1e-16, 3)
+    b.set_xlabel("langkah $k$")
+    b.set_ylabel("$|t_k - t^*|$")
+    b.set_title("galat per langkah")
+    b.legend(loc="lower left", fontsize=6)
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab02-optim")
+
+
 def bab04_sigmoid():
     from bab04_sigmoid import sigmoid
     z = np.linspace(-7, 7, 701)

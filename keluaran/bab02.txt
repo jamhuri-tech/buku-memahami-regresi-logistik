@@ -1,0 +1,60 @@
+# Blok keluaran yang tercetak di Bab 2 (bab02-matematika.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab02_*.py.
+
+=== blok 1 ===
+(1) tes penyakit, rumus Bayes:
+    P(positif)          = 0.0585
+    P(sakit | positif)  = 0.1538
+    odds awal 0.0101 x rasio 18.0 = odds akhir 0.1818
+    peluang dari odds akhir = 0.1538
+    satu juta orang: 58517 positif,
+    8850 di antaranya sakit (0.1512)
+
+=== blok 2 ===
+(2) Bernoulli dengan p = 0,3, 100 000 undian:
+    rata-rata 0.2997   (harapan p = 0.3)
+    varians   0.2099   (p(1 - p) = 0.21)
+
+=== blok 3 ===
+(1) f di (0.5, -0.3):
+    gradien rumus       [ 2.448721 -2.149859]
+    gradien beda hingga [ 2.448721 -2.149859]
+    Hessian rumus       [[2.648721, -1.0], [-1.0, 2.349859]]
+    selisih Hessian beda hingga < 1e-8: True
+    nilai eigen Hessian [1.4882 3.5104]
+
+=== blok 4 ===
+(2) nilai eigen Hessian g:
+    di (0.0, 0.0): [-4.  2.]
+    di (1.0, 0.0): [2. 8.]
+    di (0.3, 0.0): [-2.92  2.  ]
+
+=== blok 5 ===
+(3) s(z) = log(1 + e^z) di sekitar z0 = 1:
+    s = 1.3133, s' = 0.7311, s'' = 0.1966
+       h   sebenarnya  orde satu  orde dua  galat orde dua
+     0.1   1.3873      1.3864     1.3874    +1.5e-05
+     0.5   1.7014      1.6788     1.7034    +2.0e-03
+     1.0   2.1269      2.0443     2.1426    +1.6e-02
+     2.0   3.0486      2.7754     3.1686    +1.2e-01
+    -2.0   0.3133      -0.1489     0.2444    -6.9e-02
+
+=== blok 6 ===
+(1) minimum t* = log(0.7/0.3) = 0.847298
+    galat |t - t*| dari t0 = 0:
+     k    GD (eta = 4)   Newton
+     0    8.47e-01      8.47e-01
+     1    4.73e-02      4.73e-02
+     2    7.20e-03      4.30e-04
+     3    1.14e-03      3.69e-08
+     4    1.83e-04      < 1e-12
+     5    2.92e-05      < 1e-12
+     6    4.67e-06      < 1e-12
+    GD eta = 1: galat < 1e-10 di langkah 97
+    GD eta = 4: galat < 1e-10 di langkah 12
+    GD eta = 8: galat < 1e-10 di langkah 59
+
+=== blok 7 ===
+(2) Newton dari t0 = 4:
+    4  ->  -11.97  ->  1.102e+05
+    GD eta = 4 dari t0 = 4: galat < 1e-10 di langkah 16

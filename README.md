@@ -45,7 +45,7 @@ Actions setiap kali kode berubah.
 kode/
   bab04_data.py      data contoh berjalan (Bab 4-7)
   bab04_*.py         kode Bab 4, dan seterusnya per bab
-  bab01_versi.py     mencetak versi Python dan pustaka
+  bab03_versi.py     mencetak versi Python dan pustaka
 data/SUMBER.md       asal setiap data: alamat, tanggal pengambilan
 keluaran/babNN.txt   blok keluaran yang tercetak di Bab NN
 gen_gambar.py        membangkitkan semua gambar buku ke gbr/
