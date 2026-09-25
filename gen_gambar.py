@@ -1874,6 +1874,104 @@ def bab19_uji():
     simpan(fig, "bab19-uji")
 
 
+
+# ============================ Bab 20 =================================
+
+def bab20_tautan():
+    from scipy.special import expit
+    from scipy.stats import norm
+    z = np.linspace(-4, 4, 400)
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.plot(z, expit(z), color=BIRU, lw=1.2, label="logit: $\\sigma(z)$")
+    ax.plot(z, norm.cdf(z), color=HIJAU, lw=1.0, ls="--",
+            label="probit: $\\Phi(z)$")
+    ax.plot(z, 1 - np.exp(-np.exp(z)), color=MERAH, lw=1.0, ls="-.",
+            label="cloglog: $1 - e^{-e^{z}}$")
+    ax.axhline(0.5, color=ABU_GARIS, lw=0.5, ls=":")
+    ax.set_xlabel("skor $z$")
+    ax.set_ylabel("peluang")
+    ax.legend(fontsize=5.5, loc="upper left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab20-tautan")
+
+
+def bab20_laplace():
+    from scipy.special import expit
+    from bab04_data import BENIH, jam_belajar
+    from bab20_lanjut import laplace
+    x, y = jam_belajar()
+    theta, S = laplace(x[:, None], y, C=10.0)
+    rng = np.random.default_rng(BENIH)
+    sampel = rng.multivariate_normal(theta, S, size=20_000)
+    xx = np.linspace(-4, 24, 300)
+    V = np.column_stack([np.ones_like(xx), xx])
+    P = expit(sampel @ V.T)
+    fig, ax = plt.subplots(figsize=(4.2, 2.2))
+    ax.fill_between(xx, np.quantile(P, 0.05, axis=0),
+                    np.quantile(P, 0.95, axis=0), color=BIRU_MUDA,
+                    label="selang posterior 90 persen")
+    ax.plot(xx, expit(V @ theta), color=MERAH, lw=1.0, ls="--",
+            label="MAP")
+    ax.plot(xx, P.mean(axis=0), color=BIRU, lw=1.2, label="prediktif")
+    ax.scatter(x, y, s=8, color=np.where(y == 1, BIRU, JINGGA), zorder=3)
+    ax.axvspan(1, 11, color=ABU_GARIS, alpha=0.15, lw=0)
+    ax.set_xlabel("jam belajar per minggu (daerah abu-abu: data)")
+    ax.set_ylabel("peluang lulus")
+    ax.legend(fontsize=5.5, loc="center right")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab20-laplace")
+
+
+def bab20_neuron():
+    from matplotlib.patches import Circle, FancyArrowPatch
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.0))
+
+    def simpul(ax, x, y, teks, warna=BIRU_MUDA, r=0.28):
+        ax.add_patch(Circle((x, y), r, facecolor=warna, edgecolor=BIRU,
+                            lw=0.7))
+        ax.text(x, y, teks, ha="center", va="center", fontsize=6)
+
+    def panah(ax, a, b):
+        ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>",
+                                     mutation_scale=5, lw=0.5,
+                                     color=ABU))
+    a = axs[0]
+    for i, yy in enumerate((2.2, 1.2, 0.2)):
+        simpul(a, 0.4, yy, f"$x_{i + 1}$")
+        panah(a, (0.68, yy), (1.72, 1.2))
+    simpul(a, 2.0, 1.2, "$z$", JINGGA_MUDA)
+    panah(a, (2.28, 1.2), (2.92, 1.2))
+    simpul(a, 3.2, 1.2, "$\\sigma$", HIJAU_MUDA)
+    panah(a, (3.48, 1.2), (3.9, 1.2))
+    a.text(4.1, 1.2, "$p$", fontsize=7, va="center")
+    a.set_title("regresi logistik: satu neuron", fontsize=7)
+    b = axs[1]
+    for i, yy in enumerate((2.2, 1.2, 0.2)):
+        simpul(b, 0.3, yy, f"$x_{i + 1}$")
+    for j, yy in enumerate((2.4, 1.6, 0.8, 0.0)):
+        simpul(b, 1.5, yy, "", "#F1F1F1", 0.2)
+        for yi in (2.2, 1.2, 0.2):
+            panah(b, (0.58, yi), (1.3, yy))
+    for k, yy in enumerate((1.9, 1.2, 0.5)):
+        simpul(b, 2.9, yy, "$z_{" + str(k + 1) + "}$", JINGGA_MUDA, 0.24)
+        for yj in (2.4, 1.6, 0.8, 0.0):
+            panah(b, (1.7, yj), (2.66, yy))
+    b.text(3.3, 1.2, "softmax\n$\\to p_k$", fontsize=6, va="center")
+    b.text(1.5, -0.55, "fitur hasil belajar", fontsize=5.5, ha="center",
+           color=ABU)
+    b.set_title("jaringan saraf: regresi softmax di lapisan akhir",
+                fontsize=7)
+    for ax in axs:
+        ax.set_xlim(-0.1, 4.6)
+        ax.set_ylim(-0.8, 2.8)
+        ax.set_aspect("equal")
+        ax.axis("off")
+    fig.tight_layout()
+    simpan(fig, "bab20-neuron")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]

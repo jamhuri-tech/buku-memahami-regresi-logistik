@@ -1,0 +1,22 @@
+# Blok keluaran yang tercetak di Bab 20 (bab20-lanjut.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab20_*.py.
+
+=== blok 1 ===
+(1) jam belajar, tautan:   log-kemungkinan   titik setengah
+    logit                  -7.3432         5.616
+    probit                 -7.2686         5.658
+    cloglog                -7.4149         5.969
+
+=== blok 2 ===
+(2) Laplace, prior N(0, 10) untuk w:
+    MAP b = -3.5567, w = 0.6333; SE w = 0.3070
+     x   p(MAP)   prediktif probit   Monte Carlo
+     0.0   0.0277   0.0874             0.0809
+     5.6   0.4974   0.4976             0.4979
+    12.0   0.9827   0.9209             0.9295
+    20.0   0.9999   0.9549             0.9698
+
+=== blok 3 ===
+(3) data bulan, log-loss uji:
+    regresi logistik polinomial 4 + CV   0.252
+    gradient boosting (log-loss)         0.301
