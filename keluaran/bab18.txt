@@ -1,0 +1,31 @@
+# Blok keluaran yang tercetak di Bab 18 (bab18-multikelas.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab18_*.py.
+
+=== blok 1 ===
+n = 600, banyak per kelas: [162 272 166]
+
+=== blok 2 ===
+one-vs-rest, jumlah tiga peluang biner sebelum dinormalkan:
+    terkecil 0.692, terbesar 1.910, rata-rata 0.985
+
+=== blok 3 ===
+(1) kelas 0 sebagai rujukan (baris: kelas 1, 2; b, w1, w2):
+    kelas 1: [0.5527 2.0931 0.376 ]
+    kelas 2: [-0.8244 -0.7015  2.5986]
+    maks beda dengan MNLogit < 1e-5: True
+    log-kemungkinan kita -363.1369, MNLogit -363.1369
+
+=== blok 4 ===
+(2) simetris dari nol:
+    jumlah atas kelas (kita): [0. 0. 0.]
+    maks beda dengan sklearn < 1e-5: True
+    selisih terhadap kelas 0 = rujukan < 1e-5: True
+
+=== blok 5 ===
+data uji (20000 titik)   log-loss  akurasi
+    peluang sebenarnya   0.6801    0.7041
+    softmax              0.6921    0.7026
+    one-vs-rest          0.6980    0.7018
+
+=== blok 6 ===
+tebakan softmax dan one-vs-rest sama pada 0.9671 data uji

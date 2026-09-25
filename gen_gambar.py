@@ -1701,6 +1701,92 @@ def bab17_kasus():
     simpan(fig, "bab17-kasus")
 
 
+
+# ============================ Bab 18 =================================
+
+def _model18():
+    import warnings
+    warnings.simplefilter("ignore")
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.multiclass import OneVsRestClassifier
+    from bab18_data import tiga_kelas
+    X, y, _ = tiga_kelas()
+    lr = dict(penalty=None, tol=1e-10, max_iter=10_000)
+    return (X, y, LogisticRegression(**lr).fit(X, y),
+            OneVsRestClassifier(LogisticRegression(**lr)).fit(X, y))
+
+
+def bab18_daerah():
+    from scipy.special import softmax
+    from matplotlib.colors import ListedColormap
+    from bab18_data import B_BENAR, W_BENAR
+    X, y, soft, ovr = _model18()
+    g = np.linspace(-3, 3, 300)
+    G1, G2 = np.meshgrid(g, g)
+    Z = np.column_stack([G1.ravel(), G2.ravel()])
+    warna = [JINGGA, BIRU, HIJAU]
+    muda = ListedColormap([JINGGA_MUDA, BIRU_MUDA, HIJAU_MUDA])
+    fig, axs = plt.subplots(1, 2, figsize=(4.7, 2.4))
+    benar = softmax(Z @ W_BENAR.T + B_BENAR, axis=1).argmax(1)
+    for ax, m, judul in ((axs[0], soft, "softmax"),
+                         (axs[1], ovr, "one-vs-rest")):
+        k = m.predict(Z).reshape(G1.shape)
+        ax.contourf(G1, G2, k, levels=[-.5, .5, 1.5, 2.5], cmap=muda)
+        ax.contour(G1, G2, benar.reshape(G1.shape), levels=[.5, 1.5],
+                   colors=ABU, linewidths=0.6, linestyles="--")
+        for j in range(3):
+            ax.scatter(*X[y == j].T, s=3, color=warna[j], lw=0)
+        ax.set_aspect("equal")
+        ax.set_xlim(-3, 3)
+        ax.set_ylim(-3, 3)
+        ax.set_title(judul, fontsize=7)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    fig.tight_layout()
+    simpan(fig, "bab18-daerah")
+
+
+def bab18_irisan():
+    from scipy.special import softmax
+    from bab18_data import B_BENAR, W_BENAR
+    X, y, soft, ovr = _model18()
+    x1 = np.linspace(-3, 3, 300)
+    Z = np.column_stack([x1, np.zeros_like(x1)])
+    benar = softmax(Z @ W_BENAR.T + B_BENAR, axis=1)
+    ps, po = soft.predict_proba(Z), ovr.predict_proba(Z)
+    fig, ax = plt.subplots(figsize=(4.2, 2.2))
+    warna = [JINGGA, BIRU, HIJAU]
+    for j in range(3):
+        ax.plot(x1, benar[:, j], color=warna[j], lw=0.6, ls=":")
+        ax.plot(x1, ps[:, j], color=warna[j], lw=1.1)
+        ax.plot(x1, po[:, j], color=warna[j], lw=0.8, ls="--")
+    ax.plot([], [], color=ABU, lw=0.6, ls=":", label="sebenarnya")
+    ax.plot([], [], color=ABU, lw=1.1, label="softmax")
+    ax.plot([], [], color=ABU, lw=0.8, ls="--", label="one-vs-rest")
+    ax.set_xlabel("$x_1$ (dengan $x_2 = 0$)")
+    ax.set_ylabel("peluang kelas")
+    ax.legend(fontsize=5.5, loc="center left")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab18-irisan")
+
+
+def bab18_jumlah():
+    from bab18_data import tiga_kelas
+    _, _, _, ovr = _model18()
+    Xu, _, _ = tiga_kelas(20_000, benih=1)
+    s = np.column_stack([e.predict_proba(Xu)[:, 1]
+                         for e in ovr.estimators_]).sum(axis=1)
+    fig, ax = plt.subplots(figsize=(4.0, 1.9))
+    ax.hist(s, bins=60, color=BIRU_MUDA, edgecolor=BIRU, lw=0.4)
+    ax.axvline(1, color=MERAH, lw=0.8, ls="--")
+    ax.set_xlabel("jumlah tiga peluang biner one-vs-rest")
+    ax.set_ylabel("banyak titik uji")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab18-jumlah")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
