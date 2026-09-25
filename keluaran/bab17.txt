@@ -1,0 +1,39 @@
+# Blok keluaran yang tercetak di Bab 17 (bab17-takseimbang.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab17_*.py.
+
+=== blok 1 ===
+populasi n = 200000, kelas 1 = 5272 (0.0264)
+
+=== blok 2 ===
+(1) tanpa bobot: b = -4.6335
+                 w = +1.026 -0.826 +0.598 +0.482 -0.002
+    balanced   : b = -1.0266
+                 w = +1.029 -0.831 +0.592 +0.470 -0.008
+    selisih intersep 3.6068, log(n0 / n1) = 3.6092
+
+=== blok 3 ===
+(2) ambang setara tanpa bobot: sigma(-log(n0/n1)) = 0.0264
+    tebakan sama pada 0.9972 data uji
+    AUC uji: tanpa bobot 0.8373, balanced 0.8372
+
+=== blok 4 ===
+(3) biaya per titik, c_FN = 50, c_FP = 1:
+    tanpa bobot, ambang 0.0196: 0.5399
+    balanced,    ambang 0.5   : 0.5545
+    balanced,    ambang 0.0196: 0.9465
+    peluang sebenarnya, 0.0196: 0.5390
+    selalu negatif           : 1.2857
+
+=== blok 5 ===
+populasi penuh (n = 200000): b = -4.633, w1 = 1.026 (SE 0.016)
+proporsi kelas 1 di populasi uji: 0.0257
+kasus : kontrol = 1 : 1 (n = 10544):
+    b = -1.010, log(r1/r0) = 3.609, b dikoreksi = -4.619
+    w1 = 1.027 (SE 0.027), SE / SE penuh = 1.72
+    uji: rata p mentah 0.3284, dikoreksi 0.0264
+    ECE uji: mentah 0.3027, dikoreksi 0.0009
+kasus : kontrol = 1 : 5 (n = 31632):
+    b = -2.639, log(r1/r0) = 2.000, b dikoreksi = -4.639
+    w1 = 1.039 (SE 0.020), SE / SE penuh = 1.25
+    uji: rata p mentah 0.1266, dikoreksi 0.0260
+    ECE uji: mentah 0.1009, dikoreksi 0.0012

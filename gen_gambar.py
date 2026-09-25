@@ -1607,6 +1607,100 @@ def bab16_peta():
     simpan(fig, "bab16-peta")
 
 
+
+# ============================ Bab 17 =================================
+
+def bab17_geser():
+    from scipy.special import expit, logit
+    from bab17_bobot import biaya, latih
+    from bab17_data import populasi
+    X, y, _ = populasi()
+    Xu, yu, _ = populasi(benih=1)
+    a, b = latih(X, y), latih(X, y, class_weight="balanced")
+    pa, pb = a.predict_proba(Xu)[:, 1], b.predict_proba(Xu)[:, 1]
+    geser = np.log((len(y) - y.sum()) / y.sum())
+    fig, (k, c) = plt.subplots(1, 2, figsize=(4.7, 2.1))
+    ambil = np.random.default_rng(0).choice(len(pa), 3000, replace=False)
+    k.scatter(pa[ambil], pb[ambil], s=2, color=BIRU, lw=0, alpha=0.5)
+    q = np.geomspace(1e-4, 0.999, 300)
+    k.plot(q, expit(logit(q) + geser), color=MERAH, lw=0.8,
+           label=r"$\sigma(\mathrm{logit}\,p + \log\frac{n_0}{n_1})$")
+    k.axhline(0.5, color=ABU_GARIS, lw=0.5, ls=":")
+    k.axvline(expit(-geser), color=ABU_GARIS, lw=0.5, ls=":")
+    k.set_xscale("log")
+    k.set_xlim(1e-4, 1)
+    k.set_xlabel("peluang tanpa bobot")
+    k.set_ylabel("peluang balanced")
+    k.legend(fontsize=5.3, loc="upper left")
+    kunci_label(k, "x")
+    ts = np.geomspace(0.002, 0.8, 120)
+    c.semilogx(ts, [biaya(yu, pa, t) for t in ts], color=BIRU, lw=1.1)
+    c.axvline(1 / 51, color=MERAH, lw=0.7, ls="--")
+    c.axvline(expit(-geser), color=ABU, lw=0.6, ls=":")
+    c.set_xlabel("ambang pada peluang tanpa bobot")
+    c.set_ylabel("biaya per titik")
+    kunci_label(c, "x")
+    for ax in (k, c):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab17-geser")
+
+
+def bab17_efisiensi():
+    import statsmodels.api as sm
+    from bab17_data import populasi
+    X, y, _ = populasi()
+    kasus, kontrol = np.flatnonzero(y == 1), np.flatnonzero(y == 0)
+    penuh = sm.Logit(y, sm.add_constant(X)).fit(disp=0).bse[1]
+    rng = np.random.default_rng(2)
+    ks = [1, 2, 3, 5, 8, 12, 20, 30]
+    se = []
+    for k in ks:
+        i = np.r_[kasus, rng.choice(kontrol, k * len(kasus),
+                                    replace=False)]
+        se.append(sm.Logit(y[i], sm.add_constant(X[i])).fit(disp=0).bse[1])
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    ax.plot(ks, np.array(se) / penuh, "-o", ms=2.8, color=BIRU, lw=1.0)
+    ax.axhline(1, color=ABU_GARIS, lw=0.6, ls="--")
+    ax.set_xlabel("banyak kontrol per kasus $k$")
+    ax.set_ylabel("SE($w_1$) / SE populasi")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab17-efisiensi")
+
+
+def bab17_kasus():
+    import statsmodels.api as sm
+    from scipy.special import expit
+    from bab17_data import populasi
+    X, y, _ = populasi()
+    Xu, yu, _ = populasi(benih=1)
+    rng = np.random.default_rng(1)
+    kasus, kontrol = np.flatnonzero(y == 1), np.flatnonzero(y == 0)
+    ambil = rng.choice(kontrol, size=len(kasus), replace=False)
+    i = np.r_[kasus, ambil]
+    h = sm.Logit(y[i], sm.add_constant(X[i])).fit(disp=0)
+    koreksi = np.log(len(kontrol) / len(ambil))
+    z = sm.add_constant(Xu) @ h.params
+    fig, ax = plt.subplots(figsize=(4.0, 2.2))
+    for p, w, nama in ((expit(z), MERAH, "tanpa koreksi"),
+                       (expit(z - koreksi), BIRU, "intersep dikoreksi")):
+        tepi = np.quantile(p, np.linspace(0, 1, 16))
+        kel = np.clip(np.digitize(p, tepi[1:-1]), 0, 14)
+        xs = [p[kel == j].mean() for j in range(15)]
+        ys = [yu[kel == j].mean() for j in range(15)]
+        ax.loglog(xs, ys, "-o", ms=2.3, color=w, lw=1.0, label=nama)
+    g = np.array([1e-4, 1])
+    ax.loglog(g, g, color=ABU_GARIS, lw=0.6, ls="--")
+    ax.set_xlabel("peluang model (populasi uji)")
+    ax.set_ylabel("proporsi kelas 1")
+    ax.legend(fontsize=5.5, loc="upper left")
+    kunci_label(ax, "x", "y")
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab17-kasus")
+
+
 if __name__ == "__main__":
     pola = re.compile(r"^bab\d\d_")
     pilihan = sys.argv[1:]
