@@ -1,0 +1,21 @@
+# Blok keluaran yang tercetak di Bab 9 (bab09-kalibrasi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab09_*.py.
+
+=== blok 1 ===
+(1) data mini (data latih):
+    rata-rata p = 0.5000, rata-rata y = 0.5000
+    ECE (2 kelompok) = 0.1540
+    intersep = 0.0000, kemiringan = 1.0000
+    Hosmer-Lemeshow (G = 2) = 0.9673
+
+=== blok 2 ===
+(2) data sintetis, n latih 200, diukur pada 20 000 data uji:
+    model                  ECE    intersep  kemiringan  HL p
+    3 peubah benar, MLE   0.0237   0.1439    1.0813    < 1e-10
+    20 peubah, MLE        0.1146   0.4038    0.4415    < 1e-10
+    20 peubah, C = 0.01   0.1014   0.1445    2.8616    < 1e-10
+
+=== blok 3 ===
+(3) Platt scaling, dilatih pada 5000 data validasi:
+    20 peubah, MLE        ECE 0.0063, kemiringan 1.0478
+    20 peubah, C = 0.01   ECE 0.0077, kemiringan 1.0375

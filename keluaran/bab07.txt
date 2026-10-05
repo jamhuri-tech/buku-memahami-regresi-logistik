@@ -1,0 +1,21 @@
+# Blok keluaran yang tercetak di Bab 7 (bab07-prediksi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab07_*.py.
+
+=== blok 1 ===
+(1) kovarians MLE (X^T D X)^{-1}:
+    [[11.4775, -2.9148], [-2.9148, 0.8328]]
+
+=== blok 2 ===
+(2) prediksi dan selang 95% (metode delta):
+      x0      z      SE(z)     p      bawah   atas
+     2.5  -1.2140  1.4520   0.2290  0.0170  0.8364
+     4.5   1.2140  1.4520   0.7710  0.1636  0.9830
+     5.0   1.8210  1.7747   0.8607  0.1601  0.9950
+     7.0   4.2491  3.3879   0.9859  0.0839  1.0000
+    sama dengan statsmodels get_prediction: True
+
+=== blok 3 ===
+(3) ambang t dan jam belajar minimum untuk tebakan lulus:
+    t = 0.5: x >= 3.5000, tebakan = [0 0 0 1 1 1]
+    t = 0.3: x >= 2.8021, tebakan = [0 0 1 1 1 1]
+    t = 0.2: x >= 2.3581, tebakan = [0 0 1 1 1 1]

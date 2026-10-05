@@ -382,6 +382,122 @@ def bab06_penalti():
     simpan(fig, "bab06-penalti")
 
 
+# ============================ Bab 7 ==================================
+
+def bab07_prediksi():
+    from scipy.special import logit
+    from bab01_data import data_mini, mle_mini, rancang
+    from bab07_prediksi import kovarians, prediksi_selang
+    x, y = data_mini()
+    X = rancang(x)
+    m = mle_mini()
+    C = kovarians(m, X)
+    g = np.linspace(0, 8, 300)
+    p, lo, hi, _ = prediksi_selang(m, C, rancang(g))
+    fig, ax = plt.subplots(figsize=(4.0, 2.3))
+    ax.fill_between(g, lo, hi, color=BIRU_MUDA, lw=0,
+                    label="selang 95% (metode delta)")
+    ax.plot(g, p, color=BIRU, lw=1.1, label=r"$\hat p(x)$")
+    ax.scatter(x, y, s=12, color=np.where(y == 1, BIRU, JINGGA), zorder=3)
+    for t, wr in [(0.5, MERAH), (0.2, HIJAU)]:
+        xt = (logit(t) - m[0]) / m[1]
+        ax.plot([0, xt], [t, t], color=wr, lw=0.6, ls="--")
+        ax.plot([xt, xt], [0, t], color=wr, lw=0.6, ls="--")
+        ax.annotate(f"$t = {angka_mat(t, 1)}$", (0.1, t + 0.03),
+                    fontsize=6, color=wr)
+    ax.set_xlabel("jam belajar $x$")
+    ax.set_ylabel("peluang lulus")
+    ax.legend(loc="lower right", fontsize=6)
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab07-prediksi")
+
+
+# ============================ Bab 8 ==================================
+
+def bab08_kurva():
+    from scipy.special import expit
+    from sklearn import metrics
+    from bab01_data import data_mini, mle_mini, rancang
+    x, y = data_mini()
+    p = expit(rancang(x) @ mle_mini())
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    fpr, tpr, _ = metrics.roc_curve(y, p, drop_intermediate=False)
+    a.fill_between(fpr, tpr, step=None, color=BIRU_MUDA, lw=0)
+    a.plot(fpr, tpr, "o-", ms=3, color=BIRU, lw=1.0)
+    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    a.annotate("AUC = 8/9", (0.45, 0.35), fontsize=7, color=BIRU)
+    a.set_xlabel("FPR = 1 - spesifisitas")
+    a.set_ylabel("TPR = recall")
+    a.set_title("kurva ROC")
+    a.set_aspect("equal")
+    urut = np.argsort(-p)
+    tp = np.cumsum(y[urut])
+    prec = tp / np.arange(1, 7)
+    rec = tp / 3
+    b.step(np.r_[0, rec], np.r_[1, prec], where="pre", color=JINGGA,
+           lw=1.0)
+    b.plot(rec, prec, "o", ms=3, color=JINGGA)
+    b.axhline(0.5, color=ABU_GARIS, lw=0.6, ls="--")
+    b.annotate("AP = 11/12", (0.1, 0.62), fontsize=7, color=JINGGA)
+    b.set_xlim(-0.02, 1.02)
+    b.set_ylim(0, 1.05)
+    b.set_xlabel("recall")
+    b.set_ylabel("precision")
+    b.set_title("kurva precision-recall")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab08-kurva")
+
+
+# ============================ Bab 9 ==================================
+
+def bab09_reliabilitas():
+    import warnings
+    from sklearn.linear_model import LogisticRegression
+    from bab01_data import BENIH
+    from bab09_kalibrasi import data_sintetis, platt
+    Xl, yl = data_sintetis(200, BENIH)
+    Xv, yv = data_sintetis(5000, BENIH + 1)
+    Xu, yu = data_sintetis(20000, BENIH + 2)
+    fig, ax = plt.subplots(figsize=(3.6, 3.0))
+    ax.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.7, ls="--")
+    tepi = np.linspace(0, 1, 11)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for nama, C, kol, wr, gaya in [
+                ("3 peubah, MLE", None, slice(0, 3), HIJAU, "o"),
+                ("20 peubah, MLE", None, slice(0, 20), MERAH, "s"),
+                ("20 peubah, C = 0,01", 0.01, slice(0, 20), JINGGA, "^"),
+                ("20 peubah, MLE + Platt", "platt", slice(0, 20), BIRU,
+                 "D")]:
+            if C == "platt":
+                m = LogisticRegression(penalty=None, solver="newton-cholesky",
+                                       tol=1e-10).fit(Xl[:, kol], yl)
+                f = platt(m.predict_proba(Xv[:, kol])[:, 1], yv)
+                pu = f(m.predict_proba(Xu[:, kol])[:, 1])
+            else:
+                m = (LogisticRegression(penalty=None) if C is None else
+                     LogisticRegression(C=C))
+                m.set_params(solver="newton-cholesky", tol=1e-10)
+                m.fit(Xl[:, kol], yl)
+                pu = m.predict_proba(Xu[:, kol])[:, 1]
+            idx = np.minimum((pu * 10).astype(int), 9)
+            mp = [pu[idx == k].mean() for k in range(10) if (idx == k).sum() > 20]
+            my = [yu[idx == k].mean() for k in range(10) if (idx == k).sum() > 20]
+            ax.plot(mp, my, gaya + "-", ms=2.8, lw=0.9, color=wr, label=nama)
+    ax.set_xlabel("rata-rata peluang dalam kelompok")
+    ax.set_ylabel("proporsi positif")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
+    ax.legend(loc="upper left", fontsize=5.5)
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab09-reliabilitas")
+
+
 # ============================ PENANDA ================================
 # Fungsi gambar baru disisipkan DI ATAS penanda ini.
 

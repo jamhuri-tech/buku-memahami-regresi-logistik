@@ -1,0 +1,26 @@
+# Blok keluaran yang tercetak di Bab 8 (bab08-performa.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab08_*.py.
+
+=== blok 1 ===
+(1) matriks kebingungan dan ukuran ambang:
+     t    TP FP TN FN   akurasi  prec   recall  spes   F1
+    0.5   2  1  2  1    0.6667  0.6667  0.6667  0.6667  0.6667
+    0.3   3  1  2  0    0.8333  0.7500  1.0000  0.6667  0.8571
+    sklearn sama: True True
+
+=== blok 2 ===
+(2) ROC dan AUC:
+    t = 0.9541: FPR = 0.0000, TPR = 0.3333
+    t = 0.8607: FPR = 0.0000, TPR = 0.6667
+    t = 0.6473: FPR = 0.3333, TPR = 0.6667
+    t = 0.3527: FPR = 0.3333, TPR = 1.0000
+    t = 0.0459: FPR = 1.0000, TPR = 1.0000
+    AUC Mann-Whitney = 0.8889, sklearn = 0.8889
+    AP sendiri = 0.9167, sklearn = 0.9167
+
+=== blok 3 ===
+(3) ukuran peluang:
+    log-loss = 0.4130, Brier = 0.1468, sklearn = 0.1468
+    Brier model nol = 0.2500, skill = 0.4127
+    McFadden = 0.4042, Cox-Snell = 0.4290
+    Nagelkerke = 0.5719, Tjur = 0.4450
