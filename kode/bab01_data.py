@@ -25,11 +25,20 @@ def rancang(x):
 
 
 def mle_mini():
-    """MLE data mini, theta = (b, w), dari scikit-learn tanpa penalti."""
-    from sklearn.linear_model import LogisticRegression
+    """MLE data mini, theta = (b, w), sampai ketelitian mesin.
+
+    Dihitung dengan metode Newton dari theta = 0 (Bab 5), yang pada
+    data ini konvergen dalam tujuh langkah.
+    """
     x, y = data_mini()
-    m = LogisticRegression(penalty=None, tol=1e-12).fit(x[:, None], y)
-    return np.array([m.intercept_[0], m.coef_[0, 0]])
+    X = rancang(x)
+    theta = np.zeros(2)
+    for _ in range(12):
+        p = 1 / (1 + np.exp(-(X @ theta)))
+        g = X.T @ (p - y)
+        H = X.T @ (X * (p * (1 - p))[:, None])
+        theta = theta - np.linalg.solve(H, g)
+    return theta
 
 
 if __name__ == "__main__":

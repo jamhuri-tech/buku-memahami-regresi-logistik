@@ -232,6 +232,156 @@ def bab03_gradien():
     simpan(fig, "bab03-gradien")
 
 
+# ============================ Bab 4 ==================================
+
+def bab04_gd():
+    from bab01_data import data_mini, mle_mini, rancang
+    from bab02_loss import log_loss
+    from bab04_gd import gd, sgd
+    x, y = data_mini()
+    X = rancang(x)
+    Xc = rancang(x - 3.5)
+    m = mle_mini()
+    Ls = log_loss(m, X, y)
+    L = np.linalg.eigvalsh(X.T @ X / 24).max()
+    Lc = 17.5 / 24
+    jm = gd(X, y, 1 / L, 4000)
+    jc = gd(Xc, y, 1 / Lc, 4000)
+    js = sgd(Xc, y, 0.5, 4000)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    bb = np.linspace(-6, 1, 241)
+    ww = np.linspace(-0.3, 1.9, 241)
+    B, W = np.meshgrid(bb, ww)
+    T = np.stack([B.ravel(), W.ravel()], 1)
+    Z = T @ X.T
+    Lg = (np.logaddexp(0, Z) - Z * y).mean(1).reshape(B.shape)
+    a.contour(B, W, Lg, levels=[0.415, 0.43, 0.46, 0.5, 0.6, 0.7, 0.9],
+              colors=ABU_GARIS, linewidths=0.6)
+    a.plot(jm[:, 0], jm[:, 1], "-", color=BIRU, lw=0.9,
+           label="x mentah")
+    a.plot(jm[[0, 10, 100, 1000], 0], jm[[0, 10, 100, 1000], 1], "o",
+           ms=2.5, color=BIRU)
+    # jalur x dipusat, dipetakan ke (b, w) = (b_c - 3,5 w, w)
+    a.plot(jc[:60, 0] - 3.5 * jc[:60, 1], jc[:60, 1], "-", color=JINGGA,
+           lw=0.9, label="x dipusat")
+    a.plot(*m, "*", ms=6, color=MERAH, zorder=4)
+    a.set_xlabel("$b$")
+    a.set_ylabel("$w$")
+    a.legend(loc="upper right", fontsize=6)
+    a.set_title(r"jalur GD, $\eta = 1/L$")
+    k = np.arange(4001)
+    for jj, A, nama, wr in [(jm, X, "GD, x mentah", BIRU),
+                            (jc, Xc, "GD, x dipusat", JINGGA)]:
+        sel = np.array([log_loss(t, A, y) for t in jj]) - Ls
+        b.semilogy(k, np.maximum(sel, 1e-16), color=wr, lw=1.0,
+                   label=nama)
+    e = np.arange(len(js)) * 6
+    sel = np.array([log_loss(t, Xc, y) for t in js]) - Ls
+    b.semilogy(e, np.maximum(sel, 1e-16), color=HIJAU, lw=1.0,
+               label="SGD (per epoch)")
+    b.set_xlim(0, 4000)
+    b.set_ylim(1e-14, 1)
+    b.set_xlabel("langkah (SGD: pembaruan)")
+    b.set_ylabel(r"$L(\theta_k) - L^*$")
+    b.legend(loc="upper right", fontsize=6)
+    b.set_title("kecepatan turun")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab04-gd")
+
+
+# ============================ Bab 5 ==================================
+
+def bab05_newton():
+    from bab01_data import data_mini, mle_mini, rancang
+    from bab02_loss import log_loss
+    from bab04_gd import gd
+    from bab05_newton import newton
+    x, y = data_mini()
+    X = rancang(x)
+    m = mle_mini()
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    bb = np.linspace(-8, 1, 241)
+    ww = np.linspace(-0.3, 3.3, 241)
+    B, W = np.meshgrid(bb, ww)
+    T = np.stack([B.ravel(), W.ravel()], 1)
+    Z = T @ X.T
+    Lg = (np.logaddexp(0, Z) - Z * y).mean(1).reshape(B.shape)
+    a.contour(B, W, Lg, levels=[0.415, 0.43, 0.46, 0.5, 0.6, 0.8, 1.1,
+                                1.5], colors=ABU_GARIS, linewidths=0.6)
+    jn, _ = newton(X, y, langkah=8)
+    a.plot(jn[:, 0], jn[:, 1], "o-", ms=2.5, lw=0.9, color=BIRU,
+           label=r"Newton dari $(0, 0)$")
+    jd, _ = newton(X, y, np.array([-6.0, 3.0]), langkah=30, redam=True)
+    a.plot(jd[:, 0], jd[:, 1], "s-", ms=2.5, lw=0.9, color=JINGGA,
+           label=r"teredam dari $(-6, 3)$")
+    a.plot(*m, "*", ms=6, color=MERAH, zorder=4)
+    a.set_xlabel("$b$")
+    a.set_ylabel("$w$")
+    a.legend(loc="lower left", fontsize=6)
+    a.set_title("jalur Newton")
+    e = lambda j: np.maximum([np.abs(t - m).max() for t in j], 1e-16)
+    L = np.linalg.eigvalsh(X.T @ X / 24).max()
+    b.semilogy(e(jn), "o-", ms=2.5, lw=0.9, color=BIRU, label="Newton")
+    b.semilogy(e(gd(X, y, 1 / L, 30)), "-", lw=0.9, color=ABU,
+               label="GD, x mentah")
+    Xc = rancang(x - 3.5)
+    jc = gd(Xc, y, 24 / 17.5, 30)
+    jc = np.c_[jc[:, 0] - 3.5 * jc[:, 1], jc[:, 1]]
+    b.semilogy(e(jc), "-", lw=0.9, color=JINGGA, label="GD, x dipusat")
+    b.set_xlim(0, 30)
+    b.set_ylim(1e-16, 10)
+    b.set_xlabel("langkah $k$")
+    b.set_ylabel(r"$\max_j|\theta_{k,j} - \hat\theta_j|$")
+    b.legend(loc="center right", fontsize=6)
+    b.set_title("galat per langkah")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab05-newton")
+
+
+# ============================ Bab 6 ==================================
+
+def bab06_penalti():
+    from bab01_data import data_mini, mle_mini, rancang
+    from bab02_loss import log_loss
+    from bab06_penalti import Y_PISAH, ista_l1, newton_l2
+    x, y = data_mini()
+    X = rancang(x)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    t = np.linspace(0, 12, 300)
+    v = np.array([-3.5, 1.0])
+    a.plot(t, [log_loss(s * v, X, Y_PISAH) for s in t], color=BIRU,
+           lw=1.1, label="terpisah")
+    a.plot(t, [log_loss(s * v, X, y) for s in t], color=JINGGA, lw=1.0,
+           label="data mini")
+    a.axhline(0, color=ABU_GARIS, lw=0.5)
+    a.set_xlabel(r"$t$ pada $\theta = t\,(-3{,}5;\ 1)$")
+    a.set_ylabel(r"$L(\theta)$")
+    a.legend(loc="upper right", fontsize=6)
+    a.set_title("sepanjang satu sinar")
+    C = np.logspace(-2, 2, 41)
+    w2 = [newton_l2(X, y, 1 / (6 * c))[1] for c in C]
+    w2s = [newton_l2(X, Y_PISAH, 1 / (6 * c))[1] for c in C]
+    w1 = [ista_l1(X, y, 1 / (6 * c), 0.25, 4000)[1] for c in C]
+    b.semilogx(C, w2, color=BIRU, lw=1.1, label="L2, data mini")
+    b.semilogx(C, w1, color=HIJAU, lw=1.1, label="L1, data mini")
+    b.semilogx(C, w2s, color=JINGGA, lw=1.0, ls="--",
+               label="L2, terpisah")
+    b.axhline(mle_mini()[1], color=MERAH, lw=0.6, ls=":")
+    b.axvline(1 / (6 * 0.58333), color=ABU, lw=0.5, ls=":")
+    b.set_xlabel("$C$ scikit-learn")
+    b.set_ylabel("$w$")
+    b.legend(loc="upper left", fontsize=6)
+    b.set_title("jalur regularisasi")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab06-penalti")
+
+
 # ============================ PENANDA ================================
 # Fungsi gambar baru disisipkan DI ATAS penanda ini.
 

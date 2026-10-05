@@ -1,0 +1,40 @@
+# Blok keluaran yang tercetak di Bab 6 (bab06-regularisasi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab06_*.py.
+
+=== blok 1 ===
+(1) data terpisah y = (0,0,0,1,1,1), L(t v), v = (-3.5, 1):
+    t =  1: L = 0.251460
+    t =  2: L = 0.122855
+    t =  5: L = 0.026482
+    t = 10: L = 0.002239
+    t = 20: L = 0.000015
+    Newton langkah  5: w = 6.54
+    Newton langkah 10: w = 16.64
+    Newton langkah 15: w = 26.64
+    peringatan statsmodels:
+      ConvergenceWarning
+      PerfectSeparationWarning
+    statsmodels |w| > 10: True
+
+=== blok 2 ===
+(2) penalti L2, lam = 1/(nC), dibandingkan dengan sklearn:
+    C = 10.0 mini      b = -3.9424, w = 1.1264, sama: True
+    C = 10.0 terpisah  b = -9.3618, w = 2.6748, sama: True
+    C =  1.0 mini      b = -2.6847, w = 0.7671, sama: True
+    C =  1.0 terpisah  b = -3.9221, w = 1.1206, sama: True
+    C =  0.1 mini      b = -0.8586, w = 0.2453, sama: True
+    C =  0.1 terpisah  b = -1.1091, w = 0.3169, sama: True
+
+=== blok 3 ===
+(3) penalti L1:
+    lam_maks = |g_w(model nol)| = 0.5833
+    C_min = 1/(n lam_maks) = 0.2857
+    lam = 0.7: b =  0.0000, w = 0.0000, saga sama: True
+    lam = 0.5: b = -0.4022, w = 0.1149, saga sama: True
+    lam = 0.1: b = -2.9482, w = 0.8423, saga sama: True
+
+=== blok 4 ===
+(4) Firth pada data terpisah:
+    b = -3.9512, w = 1.1289, x50 = 3.5000
+    skor termodifikasi nol: True
+    peluang: [0.0561 0.1553 0.3625 0.6375 0.8447 0.9439]
