@@ -1,0 +1,32 @@
+# Blok keluaran yang tercetak di Bab 12 (bab12-diagnostik.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab12_*.py.
+
+=== blok 1 ===
+(1) diagnostik titik (data mini):
+     i  Pearson  deviance  leverage   Cook
+     1  -0.2193   -0.3064   0.2836   0.0133
+     2  -0.4023   -0.5478   0.3776   0.0789
+     3   1.3546    1.4436   0.3388   0.7109
+     4  -1.3546   -1.4436   0.3388   0.7109
+     5   0.4023    0.5478   0.3776   0.0789
+     6   0.2193    0.3064   0.2836   0.0133
+    sum Pearson^2 = 4.0897, sum deviance^2 = 4.9560
+    sum leverage = 2.0000
+    sama dengan statsmodels: True True
+
+=== blok 2 ===
+(2) dfbeta: satu langkah lawan buang-satu yang eksak:
+    i = 1: (-0.5482,  0.1333)  (-0.5101,  0.1236)
+    i = 2: (-1.2642,  0.2796)  (-1.0200,  0.2214)
+    i = 3: ( 2.6753, -0.4076)  data terpisah: MLE tidak ada
+    i = 4: ( 0.1780, -0.4076)  data terpisah: MLE tidak ada
+    i = 5: (-0.6931,  0.2796)  (-0.5295,  0.2214)
+    i = 6: (-0.3849,  0.1333)  (-0.3551,  0.1236)
+
+=== blok 3 ===
+(3) Box-Tidwell (suku x log x): G = 0.0175, p = 0.8948
+(4) data sintetis n = 1000 (x1, x2 berkorelasi 0.9):
+    VIF: [5.01 5.01 1.  ]
+    x1 saja  : w1 = 1.5174, SE(w1) = 0.1167
+    x1 dan x2: w1 = 1.1910, SE(w1) = 0.2011
+    linearitas x3: G (suku x3^2) = 67.57, p < 1e-10

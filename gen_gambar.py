@@ -498,6 +498,184 @@ def bab09_reliabilitas():
     simpan(fig, "bab09-reliabilitas")
 
 
+# ============================ Bab 10 =================================
+
+def bab10_profil():
+    from bab01_data import data_mini, mle_mini, rancang
+    from bab07_prediksi import kovarians
+    from bab10_inferensi import log_kem, profil, selang_profil
+    x, y = data_mini()
+    X = rancang(x)
+    m = mle_mini()
+    se = np.sqrt(kovarians(m, X)[1, 1])
+    lmax = log_kem(m, X, y)
+    w = np.linspace(-1.5, 5.5, 141)
+    dev = np.array([2 * (lmax - profil(X, y, 1, v)) for v in w])
+    wald = ((w - m[1]) / se) ** 2
+    fig, ax = plt.subplots(figsize=(4.0, 2.4))
+    ax.plot(w, dev, color=BIRU, lw=1.1, label="profil (rasio kemungkinan)")
+    ax.plot(w, wald, color=JINGGA, lw=1.0, ls="--",
+            label="hampiran kuadratik (Wald)")
+    ax.axhline(3.8415, color=ABU, lw=0.6, ls=":")
+    a, b = selang_profil(X, y, 1)
+    for v in (a, b):
+        ax.plot([v, v], [0, 3.8415], color=BIRU, lw=0.6)
+    for v in (m[1] - 1.96 * se, m[1] + 1.96 * se):
+        ax.plot([v, v], [0, 3.8415], color=JINGGA, lw=0.6, ls="--")
+    ax.plot([0], [3.3618], "o", ms=3, color=MERAH)
+    ax.annotate("$w = 0$: $G = 3{,}36$", (0, 3.36), (0.4, 6.0),
+                fontsize=6, color=MERAH,
+                arrowprops=dict(arrowstyle="-", lw=0.4, color=MERAH))
+    ax.set_ylim(0, 9)
+    ax.set_xlabel("$w$")
+    ax.set_ylabel(r"$2(\hat\ell - \ell_{\mathrm{p}}(w))$")
+    ax.legend(loc="upper right", fontsize=6)
+    _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab10-profil")
+
+
+# ============================ Bab 11 =================================
+
+def bab11_tafsiran():
+    from scipy.special import expit
+    from bab01_data import data_mini, mle_mini, rancang
+    x, y = data_mini()
+    m = mle_mini()
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    p0 = np.linspace(0.001, 0.95, 300)
+    for OR, wr in [(2, HIJAU), (3, BIRU), (5, JINGGA)]:
+        o = OR * p0 / (1 - p0)
+        a.plot(p0, o / (1 + o) / p0, color=wr, lw=1.0,
+               label=f"OR = {OR}")
+    a.axhline(1, color=ABU_GARIS, lw=0.5)
+    a.set_xlabel("peluang dasar $p_0$")
+    a.set_ylabel("rasio risiko $p_1/p_0$")
+    a.legend(loc="upper right", fontsize=6)
+    a.set_title("OR bukan rasio risiko")
+    g = np.linspace(0, 7, 300)
+    pg = expit(m[0] + m[1] * g)
+    b.plot(g, m[1] * pg * (1 - pg), color=BIRU, lw=1.1,
+           label=r"$\hat w\,\hat p(1 - \hat p)$")
+    p = expit(rancang(x) @ m)
+    b.plot(x, m[1] * p * (1 - p), "o", ms=3, color=BIRU)
+    ame = np.mean(m[1] * p * (1 - p))
+    b.axhline(ame, color=MERAH, lw=0.8, ls="--",
+              label=f"AME = {angka(ame, 4)}")
+    b.set_xlabel("jam belajar $x$")
+    b.set_ylabel(r"$\partial\hat p/\partial x$")
+    b.legend(loc="upper left", fontsize=6)
+    b.set_title("efek marginal")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab11-tafsiran")
+
+
+# ============================ Bab 12 =================================
+
+def bab12_diagnostik():
+    import statsmodels.api as sm
+    from scipy.special import expit
+    from bab01_data import BENIH, data_mini, mle_mini, rancang
+    from bab12_diagnostik import cook, leverage
+    x, y = data_mini()
+    X = rancang(x)
+    p = expit(X @ mle_mini())
+    h, _ = leverage(X, p)
+    D = cook(y, p, h, 2)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    a.bar(x - 0.18, h, width=0.36, color=BIRU, label="leverage $h_i$")
+    a.bar(x + 0.18, D, width=0.36, color=MERAH, label="Cook $D_i$")
+    a.set_xticks(x)
+    a.set_xlabel("mahasiswa (jam belajar)")
+    a.legend(loc="upper left", fontsize=6)
+    a.set_title("data mini")
+    a.set_ylim(0, 0.95)
+    rng = np.random.default_rng(BENIH)
+    n = 1000
+    x1 = rng.normal(size=n)
+    x2 = 0.9 * x1 + np.sqrt(1 - 0.81) * rng.normal(size=n)
+    x3 = rng.normal(size=n)
+    eta = -0.5 + x1 + 0.5 * x2 + 0.8 * x3 - 0.6 * x3 ** 2
+    yy = (rng.random(n) < expit(eta)).astype(int)
+    for A, nama, wr, g in [(np.c_[x1, x2, x3], "linear dalam $x_3$", JINGGA,
+                            "o"),
+                           (np.c_[x1, x2, x3, x3 ** 2], "dengan $x_3^2$",
+                            BIRU, "s")]:
+        r = sm.Logit(yy, sm.add_constant(A)).fit(disp=0)
+        pp = r.predict(sm.add_constant(A))
+        urut = np.argsort(x3)
+        kel = np.array_split(urut, 20)
+        mx = [x3[k].mean() for k in kel]
+        mr = [(yy[k] - pp[k]).mean() for k in kel]
+        b.plot(mx, mr, g + "-", ms=2.5, lw=0.8, color=wr, label=nama)
+    se = 2 * np.sqrt(0.25 / 50)
+    b.axhspan(-se, se, color=ABU_GARIS, alpha=0.4, lw=0)
+    b.axhline(0, color=ABU, lw=0.5)
+    b.set_xlabel("$x_3$ (rata-rata kelompok)")
+    b.set_ylabel(r"rata-rata $y - \hat p$")
+    b.legend(loc="lower center", fontsize=6)
+    b.set_title("residu berkelompok")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab12-diagnostik")
+
+
+# ============================ Bab 13 =================================
+
+def bab13_validasi():
+    import warnings
+    import statsmodels.api as sm
+    from scipy.stats import norm
+    from sklearn.metrics import roc_auc_score
+    from sklearn.model_selection import RepeatedStratifiedKFold
+    from bab01_data import BENIH
+    from bab09_kalibrasi import data_sintetis
+    from bab13_validasi import model_mle
+    warnings.simplefilter("ignore")
+    X, y = data_sintetis(300, BENIH + 10)
+    Xu, yu = data_sintetis(20000, BENIH + 2)
+    m = model_mle().fit(X, y)
+    tampak = roc_auc_score(y, m.predict_proba(X)[:, 1])
+    uji = roc_auc_score(yu, m.predict_proba(Xu)[:, 1])
+    auc = []
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10, random_state=0)
+    for a, b in cv.split(X, y):
+        mm = model_mle().fit(X[a], y[a])
+        auc.append(roc_auc_score(y[b], mm.predict_proba(X[b])[:, 1]))
+    rng = np.random.default_rng(BENIH)
+    w1 = []
+    for _ in range(200):
+        i = rng.integers(0, len(y), len(y))
+        mb = model_mle().fit(X[i], y[i])
+        w1.append(mb.coef_[0, 0])
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    a.hist(auc, bins=12, color=BIRU_MUDA, edgecolor=BIRU, lw=0.5)
+    for v, nama, wr, ls in [(tampak, "tampak", MERAH, "-"),
+                            (np.mean(auc), "rata-rata CV", BIRU, "--"),
+                            (uji, "uji", HIJAU, ":")]:
+        a.axvline(v, color=wr, lw=1.0, ls=ls, label=nama)
+    a.set_xlabel("AUC per lipatan")
+    a.legend(loc="upper left", fontsize=6)
+    a.set_title("50 lipatan CV")
+    r = sm.Logit(y, sm.add_constant(X)).fit(disp=0)
+    b.hist(w1, bins=20, density=True, color=JINGGA_MUDA, edgecolor=JINGGA,
+           lw=0.5, label="bootstrap")
+    g = np.linspace(0.4, 2.4, 200)
+    b.plot(g, norm.pdf(g, r.params[1], r.bse[1]), color=BIRU, lw=1.0,
+           label="normal Wald")
+    b.axvline(1.0, color=ABU, lw=0.6, ls=":")
+    b.set_xlabel("$\\hat w_1$")
+    b.legend(loc="upper right", fontsize=6)
+    b.set_title("200 sampel bootstrap")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab13-validasi")
+
+
 # ============================ PENANDA ================================
 # Fungsi gambar baru disisipkan DI ATAS penanda ini.
 

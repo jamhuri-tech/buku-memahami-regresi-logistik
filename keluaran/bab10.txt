@@ -1,0 +1,31 @@
+# Blok keluaran yang tercetak di Bab 10 (bab10-inferensi.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab10_*.py.
+
+=== blok 1 ===
+(1) galat baku dan uji Wald untuk w:
+    SE(b) = 3.3879, SE(w) = 0.9126
+    z = 1.3303, z^2 = 1.7697, p = 0.1834
+    selang Wald w: (-0.5746, 3.0027), OR: (0.5629, 20.14)
+
+=== blok 2 ===
+(2) uji rasio kemungkinan dan uji skor (H0: w = 0):
+    l = -2.4780, l0 = -4.1589, G = 3.3618, p = 0.0667
+    deviance = 4.9560, deviance nol = 8.3178
+    skor U = [0.  3.5], S = 2.8000, p = 0.0943
+    statsmodels: llr = 3.3618, llr_pvalue = 0.0667, z = 1.3303
+
+=== blok 3 ===
+(3) selang profil w: (-0.0658, 4.1592), OR: (0.9363, 64.02)
+
+=== blok 4 ===
+(5) simulasi n = 30, w = 1, 1000 ulangan (1 terpisah):
+    selang 95%   cakupan  meleset bawah  meleset atas
+    Wald        0.977      0.001          0.022
+    profil      0.933      0.048          0.019
+    rata-rata MLE w = 1.218
+
+=== blok 5 ===
+(4) AIC dan BIC:
+    model nol: AIC = 10.3178, BIC = 10.1095
+    model x  : AIC = 8.9560, BIC = 8.5395
+    statsmodels AIC = 8.9560, BIC = 8.5395

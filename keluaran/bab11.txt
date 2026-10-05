@@ -1,0 +1,29 @@
+# Blok keluaran yang tercetak di Bab 11 (bab11-tafsiran.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab11_*.py.
+
+=== blok 1 ===
+(1) odds ratio jam belajar (data mini):
+    per 1 jam : OR =   3.3670, selang Wald (0.5629, 20.14)
+    per 2 jam : OR =  11.3368, selang Wald (0.3169, 405.58)
+    per SD x  : OR =   9.6914, selang Wald (0.3413, 275.19)
+
+=== blok 2 ===
+(2) tabel 2 x 2 (merokok, sakit):
+    ad/bc = 3.5000, logistik e^w = 3.5000
+    SE rumus = 0.4226, SE logistik = 0.4226
+    e^b = odds tidak merokok = 0.4286 (= 15/35)
+
+=== blok 3 ===
+(3) interaksi dua peubah biner (A, B):
+    b = -1.3863, wA = 1.3863, wB = 1.3863, wAB = 0.8109
+    OR A bila B=0: 4.0000, bila B=1: 9.0000, rasio: 2.2500
+
+=== blok 4 ===
+(4) efek marginal jam belajar (data mini):
+    AME = 0.1586, efek di x = 3.5: 0.3035
+    statsmodels get_margeff: 0.1586
+
+=== blok 5 ===
+(5) ketidakruntuhan (dua strata sama besar):
+    OR x bersyarat strata = 4.0000
+    OR x marginal         = 3.4490
