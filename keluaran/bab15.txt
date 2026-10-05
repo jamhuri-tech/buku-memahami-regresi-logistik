@@ -1,0 +1,55 @@
+# Blok keluaran yang tercetak di Bab 15 (bab15-studikasus.tex).
+# Diperiksa oleh periksa.py terhadap kode/bab15_*.py.
+
+=== blok 1 ===
+(1) data dan ukuran sampel:
+    n = 297, sakit = 137 (0.461), parameter peubah = 17
+    EPV = 8.06
+
+=== blok 2 ===
+(2) model tafsiran: OR, selang Wald, selang profil
+    peubah              OR    Wald            profil
+    usia/10             0.87  ( 0.54,  1.42)  ( 0.53,  1.41)
+    pria                4.66  ( 1.66, 13.08)  ( 1.71, 13.65)
+    nyeri: khas         0.12  ( 0.03,  0.46)  ( 0.03,  0.44)
+    nyeri: tak khas     0.43  ( 0.14,  1.29)  ( 0.14,  1.25)
+    nyeri: non-angina   0.16  ( 0.06,  0.42)  ( 0.06,  0.41)
+    tensi/10            1.28  ( 1.02,  1.59)  ( 1.03,  1.60)
+    kolesterol/50       1.25  ( 0.84,  1.84)  ( 0.84,  1.85)
+    gula                0.55  ( 0.17,  1.81)  ( 0.16,  1.76)
+    ekg: tidak normal   1.61  ( 0.76,  3.41)  ( 0.77,  3.45)
+    nadi_maks/10        0.84  ( 0.67,  1.04)  ( 0.67,  1.03)
+    angina_latih        2.03  ( 0.86,  4.82)  ( 0.85,  4.82)
+    depresi_st          1.43  ( 0.92,  2.25)  ( 0.93,  2.28)
+    lereng: datar       3.17  ( 1.25,  8.02)  ( 1.27,  8.21)
+    lereng: turun       1.68  ( 0.28, 10.19)  ( 0.25,  9.66)
+    pembuluh            3.71  ( 2.15,  6.41)  ( 2.21,  6.64)
+    thal: cacat tetap   0.99  ( 0.21,  4.64)  ( 0.21,  4.78)
+    thal: cacat pulih   4.03  ( 1.75,  9.27)  ( 1.77,  9.45)
+    uji rasio kemungkinan per kelompok:
+      nyeri   G =  19.14, db 3, p = 0.0003
+      lereng  G =   6.32, db 2, p = 0.0425
+      thal    G =  12.32, db 2, p = 0.0021
+
+=== blok 3 ===
+(3) diagnostik:
+    VIF terbesar = 1.84
+    suku kuadrat usia       : G =  0.54, p = 0.4606
+    suku kuadrat tensi      : G =  0.03, p = 0.8635
+    suku kuadrat kolesterol : G =  0.62, p = 0.4325
+    suku kuadrat nadi_maks  : G =  0.02, p = 0.8816
+    suku kuadrat depresi_st : G =  0.79, p = 0.3754
+    Cook terbesar = 0.0691 (pasien 181); tanpa pasien itu,
+    perubahan |koefisien| terbesar = 0.4458 (intersep)
+
+=== blok 4 ===
+(4) model prediksi, CV 5 lipatan x 10:
+    model  AUC (SD)         log-loss  Brier   kemiringan
+    MLE    0.9086 (0.0353)  0.4019    0.1218  0.7458
+    L2     0.9124 (0.0340)  0.3809    0.1190  1.0310
+    DeLong L2 lawan MLE (pengulangan pertama):
+      selisih AUC 0.0060, p = 0.0284
+(5) koreksi optimisme bootstrap MLE (B = 200):
+    AUC tampak 0.9351, optimisme 0.0246, terkoreksi 0.9105
+    kemiringan kalibrasi (susut) = 0.7869
+    R2 Cox-Snell = 0.5205, n Riley = 197

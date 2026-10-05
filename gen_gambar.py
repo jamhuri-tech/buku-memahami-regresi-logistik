@@ -676,6 +676,113 @@ def bab13_validasi():
     simpan(fig, "bab13-validasi")
 
 
+# ============================ Bab 14 =================================
+
+def bab14_perluasan():
+    from scipy.optimize import minimize
+    from scipy.special import softmax
+    from bab01_data import BENIH
+    from bab14_perluasan import data_jarang, model, softmax_loss
+    X, y = data_jarang(20000, BENIH)
+    Xu, yu = data_jarang(20000, BENIH + 1)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    for m, nama, wr, g in [(model().fit(X, y), "tanpa bobot", BIRU, "o"),
+                           (model(class_weight="balanced").fit(X, y),
+                            "balanced", MERAH, "s")]:
+        p = m.predict_proba(Xu)[:, 1]
+        kel = np.array_split(np.argsort(p), 10)
+        a.plot([p[k].mean() for k in kel], [yu[k].mean() for k in kel],
+               g + "-", ms=2.8, lw=0.9, color=wr, label=nama)
+    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    a.set_xlim(0, 1)
+    a.set_ylim(0, 0.4)
+    a.set_xlabel("rata-rata peluang (10 kelompok)")
+    a.set_ylabel("proporsi positif")
+    a.legend(loc="upper left", fontsize=6)
+    a.set_title("prevalensi 5%")
+    rng = np.random.default_rng(BENIH + 7)
+    n = 3000
+    Xm = rng.normal(size=(n, 2))
+    Wb = np.array([[0.0, 0.5, -0.5], [0.0, 1.0, -1.0], [0.0, -0.5, 1.5]])
+    A = np.c_[np.ones(n), Xm]
+    P = softmax(A @ Wb, axis=1)
+    ym = np.array([rng.choice(3, p=q) for q in P])
+    h = minimize(softmax_loss, np.zeros(9), args=(A, np.eye(3)[ym]),
+                 jac=True, method="BFGS", options={"gtol": 1e-10})
+    W = h.x.reshape(3, 3)
+    g = np.linspace(-3, 3, 200)
+    G1, G2 = np.meshgrid(g, g)
+    Ag = np.c_[np.ones(G1.size), G1.ravel(), G2.ravel()]
+    kelas = np.argmax(Ag @ W, axis=1).reshape(G1.shape)
+    b.contourf(G1, G2, kelas, levels=[-0.5, 0.5, 1.5, 2.5],
+               colors=[BIRU_MUDA, JINGGA_MUDA, HIJAU_MUDA])
+    sub = rng.choice(n, 300, replace=False)
+    for k, wr in enumerate([BIRU, JINGGA, HIJAU]):
+        s = sub[ym[sub] == k]
+        b.scatter(Xm[s, 0], Xm[s, 1], s=3, color=wr, label=f"kelas {k}")
+    b.set_xlabel("$x_1$")
+    b.set_ylabel("$x_2$")
+    b.set_aspect("equal")
+    b.legend(loc="lower left", fontsize=5.5, markerscale=2, frameon=True,
+             framealpha=0.85, edgecolor="none")
+    b.set_title("softmax tiga kelas")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab14-perluasan")
+
+
+# ============================ Bab 15 =================================
+
+def bab15_studi():
+    import warnings
+    from sklearn.model_selection import RepeatedStratifiedKFold
+    from bab10_inferensi import mle, selang_profil
+    from bab15_data import baca_jantung, rancangan
+    from bab15_studi import model_l2, model_mle
+    warnings.simplefilter("ignore")
+    d = baca_jantung()
+    X, y, nama = rancangan(d)
+    th = mle(X, y)
+    k = X.shape[1] - 1
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.9, 3.2),
+                               gridspec_kw={"width_ratios": [1.25, 1]})
+    for j in range(1, k + 1):
+        lo, hi = selang_profil(X, y, j)
+        yy = k - j
+        a.plot([np.exp(lo), np.exp(hi)], [yy, yy], color=BIRU, lw=0.9)
+        a.plot([np.exp(th[j])], [yy], "s", ms=2.8, color=BIRU)
+    a.axvline(1, color=ABU, lw=0.6, ls="--")
+    a.set_xscale("log")
+    a.set_yticks(range(k))
+    a.set_yticklabels(nama[1:][::-1], fontsize=5.5)
+    kunci_label(a, "y")
+    a.set_xlabel("odds ratio (selang profil 95%)")
+    a.set_title("model tafsiran")
+    Z = X[:, 1:]
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=1, random_state=0)
+    for mk, nm, wr, g in [(model_mle, "MLE", MERAH, "o"),
+                          (model_l2, "L2 (C dari CV)", BIRU, "s")]:
+        q = np.zeros(len(y))
+        for tr, te in cv.split(Z, y):
+            q[te] = mk().fit(Z[tr], y[tr]).predict_proba(Z[te])[:, 1]
+        kel = np.array_split(np.argsort(q), 8)
+        b.plot([q[i].mean() for i in kel], [y[i].mean() for i in kel],
+               g + "-", ms=2.8, lw=0.9, color=wr, label=nm)
+    b.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
+    b.set_xlim(0, 1)
+    b.set_ylim(0, 1)
+    b.set_aspect("equal")
+    b.set_xlabel("peluang (luar lipatan)")
+    b.set_ylabel("proporsi sakit")
+    b.legend(loc="upper left", fontsize=6)
+    b.set_title("kalibrasi CV")
+    for ax in (a, b):
+        _rapikan(ax)
+    fig.tight_layout()
+    simpan(fig, "bab15-studi")
+
+
 # ============================ PENANDA ================================
 # Fungsi gambar baru disisipkan DI ATAS penanda ini.
 
