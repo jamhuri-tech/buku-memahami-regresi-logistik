@@ -23,6 +23,8 @@ for berkas in sorted(glob.glob("keluaran/bab[0-9][0-9].txt")):
     blok = re.split(r"^=== blok \d+ ===\n", teks, flags=re.M)[1:]
     keluaran = ""
     for s in sorted(glob.glob(f"kode/bab{nn}_*.py")):
+        if "# cek_keluaran: lewati" in open(s, encoding="utf-8").read():
+            continue
         hasil = subprocess.run([sys.executable, s], capture_output=True,
                                text=True)
         if hasil.returncode != 0:

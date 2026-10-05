@@ -1,56 +1,27 @@
-# Blok keluaran yang tercetak di Bab 3 (bab03-python.tex).
+# Blok keluaran yang tercetak di Bab 3 (bab03-gradien.tex).
 # Diperiksa oleh periksa.py terhadap kode/bab03_*.py.
 
 === blok 1 ===
-Python       3.13
-NumPy        2.1.3
-SciPy        1.15.3
-scikit-learn 1.6.1
-statsmodels  0.14.4
-pandas       2.2.3
-Matplotlib   3.10.0
+(1) gradien dan Hessian (rata-rata):
+    theta = (0, 0)
+      g = (  0.0000,  -0.5833)
+      H = [[0.2500, 0.8750], [0.8750, 3.7917]]
+      nilai eigen H: 0.0456, 3.9960
+    theta = (-2.8, 0.8)
+      g = (  0.0000,  -0.1153)
+      H = [[0.1744, 0.6103], [0.6103, 2.5084]]
+      nilai eigen H: 0.0244, 2.6583
+    theta = MLE
+      g = (  0.0000,   0.0000)
+      H = [[0.1307, 0.4573], [0.4573, 1.8007]]
+      nilai eigen H: 0.0136, 1.9177
+(2) beda hingga di (-2.8, 0.8):
+    selisih gradien < 1e-8: True
+    selisih Hessian < 1e-8: True
+    statsmodels: score = -n g dan hessian = -n H: True True
 
 === blok 2 ===
-(1) matriks rancangan jam belajar:
-    X.shape = (16, 2), theta.shape = (2,), z.shape = (16,)
-    tiga baris pertama X:
-        [1. 1.]
-        [1. 2.]
-        [1. 2.]
-    p tiga mahasiswa pertama: [0.0497 0.0902 0.0902]
-
-=== blok 3 ===
-(2) luapan dan cara menghindarinya:
-    np.exp(709) = 8.2184e+307
-    np.exp(710) = inf
-    log(1 + exp(800))      = inf
-    np.logaddexp(0, 800)   = 800.0
-    log(expit(-800))       = -inf
-    log_expit(-800)        = -800.0
-    log(1 - expit(40))     = -inf
-    log_expit(-40)         = -40.0
-
-=== blok 4 ===
-(3) solve lawan inv, matriks Hilbert 10 x 10:
-    bilangan kondisi 1.6e+13
-    residu solve < 1e-12: True
-    residu inv   > 1e-8 : True
-
-=== blok 5 ===
-(1) jam belajar, tiga cara:               b         w
-    scipy minimize (BFGS)             -3.5903    0.6393
-    LogisticRegression(penalty=None)  -3.5903    0.6393
-    statsmodels Logit                 -3.5903    0.6393
-    LogisticRegression() bawaan       -3.2975    0.5865
-    penalti bawaan: l2, C = 1.0
-
-=== blok 6 ===
-(2) benih acak:
-    benih sama: [ 0.8981  0.3307 -0.501 ]
-    benih sama: [ 0.8981  0.3307 -0.501 ]
-    benih lain: [0.4355 0.5123 1.55  ]
-
-=== blok 7 ===
-(3) make_classification:
-    X (1000, 5), kelas 1: 203 dari 1000
-    pangkat X = 4 (satu kolom kombinasi linear kolom lain)
+(3) persamaan skor di MLE:
+    sum p = 3.000000, sum y = 3
+    sum x p = 14.000000, sum x y = 14
+    |b + 3.5 w| < 1e-6: True

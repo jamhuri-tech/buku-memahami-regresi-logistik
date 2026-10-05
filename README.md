@@ -1,8 +1,15 @@
 # Kode — Memahami Regresi Logistik
 
-Repositori pendamping buku **_Memahami Regresi Logistik: Menaksir
-peluang, bukan sekadar menebak kelas_** (Edisi Pertama, 2026) oleh
+Repositori pendamping buku **_Memahami Regresi Logistik: Dari Data
+sampai Inferensi, Langkah demi Langkah_** (Edisi Pertama, 2026) oleh
 Mohammad Jamhuri, seri *Memahami*.
+
+Buku ini memakai satu **data mini** (enam mahasiswa, jam belajar
+1-6, lulus 0, 0, 1, 0, 1, 1) dari awal sampai akhir: setiap skor,
+peluang, loss, gradien, Hessian, langkah gradient descent dan Newton,
+ukuran performa, galat baku, dan uji dihitung tangan di buku lalu
+diperiksa oleh kode di sini. File `kode/babNN_contoh.py` memeriksa
+setiap bilangan di kotak Contoh Soal Bab NN.
 
 Berisi seluruh kode Python yang dipakai buku, per bab, beserta data dan
 pembangkit gambarnya. **Setiap angka keluaran yang tercetak di buku
@@ -21,18 +28,18 @@ git clone https://github.com/jamhuri-tech/buku-memahami-regresi-logistik.git
 cd buku-memahami-regresi-logistik
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python kode/bab04_model.py
+.venv/bin/python kode/bab01_model.py
 ```
 
 Setiap skrip dijalankan dari akar repositori. Pembangkit bilangan acak
-selalu memakai benih tetap (20260924), sehingga keluarannya sama setiap
+selalu memakai benih tetap (20261005), sehingga keluarannya sama setiap
 kali dijalankan.
 
 ## Memeriksa angka di buku
 
 ```bash
 .venv/bin/python periksa.py        # semua bab
-.venv/bin/python periksa.py 04     # Bab 4 saja
+.venv/bin/python periksa.py 05     # Bab 5 saja
 ```
 
 Keluaran `SEMUA COCOK` berarti setiap blok keluaran di buku dihasilkan
@@ -43,9 +50,11 @@ Actions setiap kali kode berubah.
 
 ```
 kode/
-  bab04_data.py      data contoh berjalan (Bab 4-7)
-  bab04_*.py         kode Bab 4, dan seterusnya per bab
-  bab03_versi.py     mencetak versi Python dan pustaka
+  bab01_data.py      data mini dan matriks rancangan
+  bab02_loss.py      log-loss (dipakai bab-bab berikutnya)
+  bab03_turunan.py   gradien dan Hessian (dipakai bab berikutnya)
+  babNN_*.py         kode Bab NN
+  babNN_contoh.py    pemeriksa hitungan tangan Contoh Soal Bab NN
 data/SUMBER.md       asal setiap data: alamat, tanggal pengambilan
 keluaran/babNN.txt   blok keluaran yang tercetak di Bab NN
 gen_gambar.py        membangkitkan semua gambar buku ke gbr/
@@ -54,9 +63,9 @@ requirements.txt     versi pustaka yang dipakai buku
 ```
 
 Nama berkas kode di buku sama dengan nama di sini: listing yang
-merujuk `kode/bab04_sigmoid.py` berasal dari berkas itu.
+merujuk `kode/bab03_turunan.py` berasal dari berkas itu.
 
-`python gen_gambar.py bab04` membangkitkan gambar Bab 4 saja.
+`python gen_gambar.py bab03` membangkitkan gambar Bab 3 saja.
 
 ## Versi
 

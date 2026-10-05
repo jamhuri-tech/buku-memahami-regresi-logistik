@@ -1,19 +1,18 @@
-# Blok keluaran yang tercetak di Bab 1 (bab01-mengapa.tex).
+# Blok keluaran yang tercetak di Bab 1 (bab01-model.tex).
 # Diperiksa oleh periksa.py terhadap kode/bab01_*.py.
 
 === blok 1 ===
-(1) garis kuadrat terkecil pada label 0/1:
-    y = -0.1180 + 0.1087 x
-    x =  0.0:  garis -0.1180   logistik 0.0268
-    x =  1.0:  garis -0.0094   logistik 0.0497
-    x = 11.0:  garis  1.0773   logistik 0.9690
-    x = 15.0:  garis  1.5119   logistik 0.9975
-    x = 20.0:  garis  2.0553   logistik 0.9999
+(1) theta = (-2.8, 0.8):
+     i   x   y      z        p      odds    logit(p)
+     1   1   0   -2.00   0.1192   0.1353    -2.00
+     2   2   0   -1.20   0.2315   0.3012    -1.20
+     3   3   1   -0.40   0.4013   0.6703    -0.40
+     4   4   0    0.40   0.5987   1.4918     0.40
+     5   5   1    1.20   0.7685   3.3201     1.20
+     6   6   1    2.00   0.8808   7.3891     2.00
 
 === blok 2 ===
-(2) titik setengah dan tebakan untuk 6,5 jam:
-    data               model      titik setengah  p(6,5 jam)
-    16 mahasiswa       linear        5.688        0.5883
-                       logistik      5.616        0.6377
-    + 3 belajar lama   linear        6.598        0.4973
-                       logistik      5.616        0.6377
+(2) MLE dari scikit-learn (penalty=None):
+    b = -4.2491, w = 1.2140
+    e^w = 3.3670, -b/w = 3.5000, w/4 = 0.3035
+    peluang lulus: [0.0459 0.1393 0.3527 0.6473 0.8607 0.9541]
