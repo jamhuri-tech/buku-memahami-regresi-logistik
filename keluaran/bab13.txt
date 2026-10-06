@@ -2,31 +2,31 @@
 # Diperiksa oleh periksa.py terhadap kode/bab13_*.py.
 
 === blok 1 ===
-(1) model 20 peubah, n = 300:
-    tampak (data latih): AUC = 0.8679, log-loss = 0.4164
-    CV 5 lipatan x 10: AUC = 0.8081, log-loss = 0.5126
-      SD antar lipatan: AUC 0.0477, log-loss 0.0828
-    data uji 20 000:   AUC = 0.8007, log-loss = 0.5240
+(1) model 20 fitur, m = 300:
+    tampak (data latih): AUC = 0.8336, log-loss = 0.4487
+    CV 5 lipatan x 10: AUC = 0.7689, log-loss = 0.5415
+      SD antar lipatan: AUC 0.0593, log-loss 0.0863
+    data uji 20 000:   AUC = 0.7965, log-loss = 0.5108
 
 === blok 2 ===
 (3) koefisien x1:
-    MLE 1.2684, SE Wald 0.2016, SE bootstrap 0.2589
-    selang persentil bootstrap (0.9663, 1.9412)
+    MLE 1.0050, SE Wald 0.1845, SE bootstrap 0.2199
+    selang persentil bootstrap (0.7702, 1.5421)
 
 === blok 3 ===
 (2) koreksi optimisme bootstrap (B = 200):
-    AUC tampak 0.8679 - optimisme 0.0433 = 0.8246
+    AUC tampak 0.8336 - optimisme 0.0502 = 0.7834
 
 === blok 4 ===
 (4) frekuensi terpilih L1 (C = 0.05) dalam 100 bootstrap:
-    x1, x2, x3: [1. 1. 1.]
-    17 peubah noise: terbesar 0.09, rata-rata 0.03
+    x1, x2, x3: [1.   1.   0.59]
+    17 fitur noise: terbesar 0.16, rata-rata 0.03
 
 === blok 5 ===
-(5) DeLong pada data uji, 3 peubah lawan 20 peubah:
-    AUC 0.8147 lawan 0.8007, selisih 0.0140
-    SE selisih 0.0012, z = 11.7, p < 1e-10
-    data mini: AUC = 0.8889, SE DeLong = 0.1571
+(5) DeLong pada data uji, 3 fitur lawan 20 fitur:
+    AUC 0.8186 lawan 0.7965, selisih 0.0221
+    SE selisih 0.0015, z = 14.6, p < 1e-10
+    data mini: AUC = 0.7222, SE DeLong = 0.2833
 
 === blok 6 ===
-(6) n Riley (p = 10, R2_CS = 0.2, S = 0.9): 397.9
+(6) m Riley (n = 10, R2_CS = 0.2, S = 0.9): 397.9

@@ -1,5 +1,5 @@
-"""Bab 11: tafsiran koefisien -- odds ratio, skala, tabel 2 x 2,
-interaksi, efek marginal rata-rata, dan ketidakruntuhan.
+"""Bab 11: tafsiran bobot -- odds ratio, skala, penyesuaian,
+tabel 2 x 2, interaksi, efek marginal rata-rata, dan ketidakruntuhan.
 """
 import numpy as np
 import statsmodels.api as sm
@@ -8,10 +8,11 @@ from scipy.stats import norm
 
 from bab01_data import data_mini, mle_mini, rancang
 from bab07_prediksi import kovarians
+from bab10_inferensi import mle
 
 
 def dari_tabel(sel):
-    """Data per sel (peubah..., y, frekuensi) -> X, y, bobot."""
+    """Data per sel (fitur..., y, frekuensi) -> X, y, frekuensi."""
     sel = np.asarray(sel, dtype=float)
     return sel[:, :-2], sel[:, -2], sel[:, -1]
 
@@ -22,52 +23,70 @@ def logit_berbobot(X, y, f):
 
 
 if __name__ == "__main__":
-    x, y = data_mini()
+    Xf, y = data_mini()
+    X = rancang(Xf)
     m = mle_mini()
-    se = np.sqrt(np.diag(kovarians(m, rancang(x))))
+    se = np.sqrt(np.diag(kovarians(m, X)))
     z = norm.ppf(0.975)
-    print("(1) odds ratio jam belajar (data mini):")
-    for nama, k in [("per 1 jam", 1.0), ("per 2 jam", 2.0),
-                    ("per SD x", np.std(x, ddof=1))]:
-        print(f"    {nama:<10}: OR = {np.exp(k * m[1]):8.4f},"
-              f" selang Wald ({np.exp(k * (m[1] - z * se[1])):.4f},"
-              f" {np.exp(k * (m[1] + z * se[1])):.2f})")
+    sd = np.std(Xf, axis=0, ddof=1)
+    print("(1) odds ratio (data mini, fitur lain tetap):")
+    for nama, j, k in [("x1 per 1 jam", 1, 1.0),
+                       ("x1 per 2 jam", 1, 2.0),
+                       ("x1 per SD", 1, sd[0]),
+                       ("x2 per 1 absen", 2, 1.0),
+                       ("x2 per SD", 2, sd[1])]:
+        lo, hi = k * (m[j] - z * se[j]), k * (m[j] + z * se[j])
+        print(f"    {nama:<15}: OR = {np.exp(k * m[j]):7.4f},"
+              f" selang ({np.exp(lo):.4f}, {np.exp(hi):.2f})")
+    print(f"    SD x1 = {sd[0]:.4f}, SD x2 = {sd[1]:.4f}")
 
-    print("(2) tabel 2 x 2 (merokok, sakit):")
-    X, yy, f = dari_tabel([[1, 1, 30], [1, 0, 20], [0, 1, 15], [0, 0, 35]])
-    r = logit_berbobot(X, yy, f)
+    print("(2) penyesuaian: OR jam belajar tanpa dan dengan absen")
+    w1 = mle(X[:, :2], y)
+    print(f"    model x1 saja : w = {np.round(w1, 4)},"
+          f" OR = {np.exp(w1[1]):.4f}")
+    print(f"    model x1 + x2 : w = {np.round(m, 4)},"
+          f" OR = {np.exp(m[1]):.4f}")
+    print(f"    korelasi x1, x2 = {np.corrcoef(Xf.T)[0, 1]:.4f}")
+
+    print("(3) tabel 2 x 2 (merokok, sakit):")
+    T, yy, f = dari_tabel([[1, 1, 30], [1, 0, 20], [0, 1, 15],
+                           [0, 0, 35]])
+    r = logit_berbobot(T, yy, f)
     print(f"    ad/bc = {30 * 35 / (20 * 15):.4f},"
-          f" logistik e^w = {np.exp(r.params[1]):.4f}")
+          f" logistik e^w1 = {np.exp(r.params[1]):.4f}")
     print(f"    SE rumus = {np.sqrt(1/30 + 1/20 + 1/15 + 1/35):.4f},"
           f" SE logistik = {r.bse[1]:.4f}")
-    print(f"    e^b = odds tidak merokok = {np.exp(r.params[0]):.4f}"
+    print(f"    e^w0 = odds tidak merokok = {np.exp(r.params[0]):.4f}"
           f" (= 15/35)")
 
-    print("(3) interaksi dua peubah biner (A, B):")
+    print("(4) interaksi dua fitur biner (x1, x2):")
     sel = [[0, 0, 0, 1, 10], [0, 0, 0, 0, 40], [1, 0, 0, 1, 20],
            [1, 0, 0, 0, 20], [0, 1, 0, 1, 20], [0, 1, 0, 0, 20],
            [1, 1, 1, 1, 45], [1, 1, 1, 0, 5]]
-    X, yy, f = dari_tabel(sel)
-    r = logit_berbobot(X, yy, f)
-    b0, bA, bB, bAB = r.params
-    print(f"    b = {b0:.4f}, wA = {bA:.4f}, wB = {bB:.4f},"
-          f" wAB = {bAB:.4f}")
-    print(f"    OR A bila B=0: {np.exp(bA):.4f},"
-          f" bila B=1: {np.exp(bA + bAB):.4f},"
-          f" rasio: {np.exp(bAB):.4f}")
+    T, yy, f = dari_tabel(sel)
+    r = logit_berbobot(T, yy, f)
+    print("    w = (" + ", ".join(f"{v:.4f}" for v in r.params) + ")")
+    w = r.params
+    print(f"    OR x1 bila x2=0: {np.exp(w[1]):.4f},"
+          f" bila x2=1: {np.exp(w[1] + w[3]):.4f},"
+          f" rasio: {np.exp(w[3]):.4f}")
 
-    p = expit(rancang(x) @ m)
-    ame = np.mean(m[1] * p * (1 - p))
-    print("(4) efek marginal jam belajar (data mini):")
-    print(f"    AME = {ame:.4f}, efek di x = 3.5: {m[1] / 4:.4f}")
-    rr = sm.Logit(y, rancang(x)).fit(disp=0)
-    print(f"    statsmodels get_margeff: {rr.get_margeff().margeff[0]:.4f}")
+    p = expit(X @ m)
+    d = p * (1 - p)
+    print("(5) efek marginal (data mini):")
+    print(f"    jumlah d_i = {d.sum():.4f}, rata-rata = {d.mean():.4f}")
+    print(f"    AME x1 = {m[1] * d.mean():.4f},"
+          f" AME x2 = {m[2] * d.mean():.4f},"
+          f" di p = 1/2: {m[1] / 4:.4f}")
+    rr = sm.Logit(y, X).fit(disp=0)
+    print("    statsmodels get_margeff:",
+          np.round(rr.get_margeff().margeff, 4))
 
-    print("(5) ketidakruntuhan (dua strata sama besar):")
+    print("(6) ketidakruntuhan (dua strata sama besar):")
     sel = [[0, 0, 1, 20], [0, 0, 0, 80], [1, 0, 1, 50], [1, 0, 0, 50],
            [0, 1, 1, 50], [0, 1, 0, 50], [1, 1, 1, 80], [1, 1, 0, 20]]
-    X, yy, f = dari_tabel(sel)
-    rk = logit_berbobot(X, yy, f)
-    rm = logit_berbobot(X[:, :1], yy, f)
-    print(f"    OR x bersyarat strata = {np.exp(rk.params[1]):.4f}")
-    print(f"    OR x marginal         = {np.exp(rm.params[1]):.4f}")
+    T, yy, f = dari_tabel(sel)
+    rk = logit_berbobot(T, yy, f)
+    rm = logit_berbobot(T[:, :1], yy, f)
+    print(f"    OR x1 bersyarat strata = {np.exp(rk.params[1]):.4f}")
+    print(f"    OR x1 marginal         = {np.exp(rm.params[1]):.4f}")

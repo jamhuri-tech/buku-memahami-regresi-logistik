@@ -3,12 +3,13 @@
 
 === blok 1 ===
 (1) data dan ukuran sampel:
-    n = 297, sakit = 137 (0.461), parameter peubah = 17
+    X berukuran 297 x 18, y berukuran 297
+    m = 297, sakit = 137 (0.461), fitur n = 17
     EPV = 8.06
 
 === blok 2 ===
 (2) model tafsiran: OR, selang Wald, selang profil
-    peubah              OR    Wald            profil
+    fitur               OR    Wald            profil
     usia/10             0.87  ( 0.54,  1.42)  ( 0.53,  1.41)
     pria                4.66  ( 1.66, 13.08)  ( 1.71, 13.65)
     nyeri: khas         0.12  ( 0.03,  0.46)  ( 0.03,  0.44)
@@ -40,7 +41,7 @@
     suku kuadrat nadi_maks  : G =  0.02, p = 0.8816
     suku kuadrat depresi_st : G =  0.79, p = 0.3754
     Cook terbesar = 0.0691 (pasien 181); tanpa pasien itu,
-    perubahan |koefisien| terbesar = 0.4458 (intersep)
+    perubahan |w_j| terbesar = 0.4458 (j = 0, bias)
 
 === blok 4 ===
 (4) model prediksi, CV 5 lipatan x 10:
@@ -50,6 +51,6 @@
     DeLong L2 lawan MLE (pengulangan pertama):
       selisih AUC 0.0060, p = 0.0284
 (5) koreksi optimisme bootstrap MLE (B = 200):
-    AUC tampak 0.9351, optimisme 0.0246, terkoreksi 0.9105
-    kemiringan kalibrasi (susut) = 0.7869
-    R2 Cox-Snell = 0.5205, n Riley = 197
+    AUC tampak 0.9351, optimisme 0.0248, terkoreksi 0.9103
+    kemiringan kalibrasi (susut) = 0.7828
+    R2 Cox-Snell = 0.5205, m Riley = 197

@@ -2,29 +2,31 @@
 # Diperiksa oleh periksa.py terhadap kode/bab05_*.py.
 
 === blok 1 ===
-(1) Newton dari theta = (0, 0):
-     k        b         w        L       |theta - MLE|
-     0    0.0000    0.0000   0.693147   4.2e+00
-     1   -2.8000    0.8000   0.434409   1.4e+00
-     2   -3.8842    1.1098   0.414146   3.6e-01
-     3   -4.2214    1.2061   0.413004   2.8e-02
-     4   -4.2489    1.2140   0.412998   1.7e-04
-     5   -4.2491    1.2140   0.412998   6.1e-09
-     6   -4.2491    1.2140   0.412998   < 1e-12
+(1) Newton dari w = (0, 0, 0):
+     k     w0       w1       w2       L      |w - MLE|
+     0   0.0000   0.0000   0.0000  0.693147  2.2e+00
+     1  -2.0000   1.0000  -1.0000  0.606557  2.0e-01
+     2  -2.1927   1.0963  -1.0963  0.605939  4.5e-03
+     3  -2.1972   1.0986  -1.0986  0.605939  2.6e-06
+     4  -2.1972   1.0986  -1.0986  0.605939  < 1e-10
+    w_k = c_k (-2, 1, -1):
+      c_k = [1.       1.096339 1.098611 1.098612]
+    sejajar (-2, 1, -1): True
 
 === blok 2 ===
 (2) IRLS langkah pertama:
-    respons kerja r = [-2. -2.  2. -2.  2.  2.]
-    kuadrat terkecil berbobot: [-2.8  0.8]
+    respons kerja r = [-2 -2  2  2  2 -2]
+    X^T X w = X^T r, X^T r = [0. 6. 2.]
+    hasil: [-2.  1. -1.]
     IRLS 10 langkah = MLE: True
 
 === blok 3 ===
-(3) dari theta0 = (-6, 3):
-    murni  k = 0: theta = (-6.00, 3.00), L = 1.1322
-    murni  k = 1: theta = (26.95, -15.52), L = 24.6369
-    murni  k = 2: |theta| > 1e5: True
-    teredam, langkah t: [0.125, 1.0, 1.0, 1.0, 1.0, 1.0]
-    teredam: 6 langkah, theta = (-4.2491, 1.2140)
+(3) dari w0 = (-6, 2, -2):
+    murni  k = 0: w = (-6.00, 2.00, -2.00), L = 0.9461
+    murni  k = 1: w = (8.19, -2.33, 2.02), L = 2.1119
+    murni  k = 2: L = 9.7651 (naik)
+    teredam, langkah t: [0.5, 1.0, 1.0, 1.0, 1.0, 1.0]
+    teredam: 6 langkah, w = (-2.1972, 1.0986, -1.0986)
 
 === blok 4 ===
 (4) pustaka (semua dibandingkan dengan MLE):

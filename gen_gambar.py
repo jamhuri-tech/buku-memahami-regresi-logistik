@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-BENIH = 20261005  # sama dengan seluruh kode/bab*.py
+BENIH = 20261006  # sama dengan seluruh kode/bab*.py
 GBR = Path("gbr")
 
 # Sebagian gambar memakai kelas yang sudah ditulis di kode/, supaya
@@ -105,81 +105,149 @@ def _rapikan(ax):
 
 # ============================ Bab 1 ==================================
 
-def bab01_sigmoid():
+def bab01_arsitektur():
+    from matplotlib.patches import Circle, FancyArrowPatch
+    fig, ax = plt.subplots(figsize=(4.8, 2.5))
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 5.2)
+    ax.axis("off")
+
+    def simpul(x, y, teks, r=0.38, wr=BIRU, isi=BIRU_MUDA):
+        ax.add_patch(Circle((x, y), r, facecolor=isi, edgecolor=wr,
+                            lw=0.8))
+        ax.text(x, y, teks, ha="center", va="center", fontsize=7)
+
+    def panah(a, b, wr=ABU, teks=None, pos=0.5, dy=0.15, ls="-"):
+        ax.add_patch(FancyArrowPatch(a, b, arrowstyle="-|>",
+                                     mutation_scale=7, color=wr, lw=0.7,
+                                     linestyle=ls))
+        if teks:
+            x = a[0] + pos * (b[0] - a[0])
+            y = a[1] + pos * (b[1] - a[1]) + dy
+            ax.text(x, y, teks, ha="center", fontsize=6, color=wr)
+
+    masuk = [(0.8, 4.3, "$1$"), (0.8, 3.2, "$x_{i1}$"),
+             (0.8, 1.6, "$x_{in}$")]
+    ax.text(0.8, 2.45, r"$\vdots$", ha="center", fontsize=8)
+    for x, yy, t in masuk:
+        simpul(x, yy, t)
+    simpul(3.6, 2.9, r"$\Sigma$")
+    for (x, yy, t), wt in zip(masuk, ["$w_0$", "$w_1$", "$w_n$"]):
+        panah((x + 0.4, yy), (3.2, 2.9), teks=wt, pos=0.45, dy=0.12)
+    simpul(5.5, 2.9, r"$\sigma$")
+    panah((4.0, 2.9), (5.1, 2.9), teks="$z_i$")
+    simpul(7.5, 2.9, r"$\ell_i$", wr=MERAH, isi=MERAH_MUDA)
+    panah((5.9, 2.9), (7.1, 2.9), teks="$p_i$")
+    ax.text(7.5, 4.3, "$y_i$", ha="center", fontsize=7)
+    panah((7.5, 4.1), (7.5, 3.3))
+    ax.text(9.2, 2.2, r"$\hat y_i = [p_i \geq t]$", ha="center",
+            fontsize=6, color=HIJAU)
+    panah((5.7, 2.55), (8.5, 2.25), wr=HIJAU, ls=":")
+    yb = 1.0
+    ax.text(7.5, yb + 0.05, r"$\dfrac{\partial\ell_i}{\partial p_i}$",
+            ha="center", fontsize=6.5, color=MERAH)
+    ax.text(5.5, yb, r"$\dfrac{\partial p_i}{\partial z_i} = p_i(1-p_i)$",
+            ha="center", fontsize=6.5, color=MERAH)
+    ax.text(3.0, yb, r"$\dfrac{\partial z_i}{\partial w_j} = x_{ij}$",
+            ha="center", fontsize=6.5, color=MERAH)
+    panah((7.0, 0.55), (3.0, 0.55), wr=MERAH)
+    ax.text(5.0, 0.0,
+            r"$\dfrac{\partial\ell_i}{\partial w_j} = (p_i - y_i)\,x_{ij}$",
+            ha="center", fontsize=7, color=MERAH)
+    for x, t in [(0.8, "masukan"), (3.6, "skor"), (5.5, "peluang"),
+                 (7.5, "loss")]:
+        ax.text(x, 5.0, t, ha="center", fontsize=6.5, color=ABU)
+    fig.tight_layout()
+    simpan(fig, "bab01-arsitektur")
+
+
+def bab01_data():
     from scipy.special import expit
     from bab01_data import data_mini
-    x, y = data_mini()
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.1))
-    z = np.linspace(-6, 6, 400)
-    a.plot(z, expit(z), color=BIRU, lw=1.1, label=r"$\sigma(z)$")
-    a.plot(z, expit(z) * (1 - expit(z)), color=JINGGA, lw=1.0,
-           label=r"$\sigma'(z)$")
-    a.plot([-2, 2], [0, 1], color=HIJAU, lw=0.7, ls="--",
-           label="garis singgung di 0")
-    a.axhline(0.5, color=ABU_GARIS, lw=0.5)
-    a.set_ylim(-0.05, 1.05)
-    a.set_xlabel("$z$")
-    a.legend(loc="center right", fontsize=6)
-    a.set_title("fungsi logistik dan turunannya")
-    g = np.linspace(0, 7, 400)
-    b.scatter(x, y, s=12, color=np.where(y == 1, BIRU, JINGGA), zorder=3)
-    b.plot(g, expit(-2.8 + 0.8 * g), color=ABU, lw=0.9, ls="--",
-           label=r"$\theta = (-2{,}8;\ 0{,}8)$")
-    bb, ww = -4.2491, 1.2140
-    b.plot(g, expit(bb + ww * g), color=BIRU, lw=1.1, label="MLE")
-    b.plot([3.5], [0.5], "o", ms=3, color=MERAH, zorder=4)
-    b.annotate("$-b/w = 3{,}5$", (3.5, 0.5), (4.4, 0.25), fontsize=6,
-               color=MERAH, arrowprops=dict(arrowstyle="-", lw=0.4,
-                                            color=MERAH))
-    b.set_xlabel("jam belajar $x$")
-    b.set_ylabel("peluang lulus")
-    b.legend(loc="upper left", fontsize=6)
-    b.set_title("data mini")
+    X, y = data_mini()
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    g1 = np.linspace(0, 7, 100)
+    a.fill_between(g1, g1 - 2, 4, color=JINGGA_MUDA, lw=0)
+    a.fill_between(g1, -1, g1 - 2, color=BIRU_MUDA, lw=0)
+    a.plot(g1, g1 - 2, color=MERAH, lw=1.0)
+    for c in (-1, 1):
+        a.plot(g1, g1 - 2 + c, color=ABU, lw=0.6, ls="--")
+    for k, (wr, mk, nama) in enumerate([(JINGGA, "s", "tidak lulus"),
+                                        (BIRU, "o", "lulus")]):
+        s = y == k
+        a.scatter(X[s, 0], X[s, 1], color=wr, marker=mk, s=18, zorder=3,
+                  label=nama)
+    for i in range(6):
+        a.annotate(str(i + 1), (X[i, 0] + 0.12, X[i, 1] + 0.12),
+                   fontsize=6, color=ABU)
+    a.set_xlim(0, 7)
+    a.set_ylim(-0.6, 3.8)
+    a.set_xlabel("$x_1$ (jam belajar)")
+    a.set_ylabel("$x_2$ (absen)")
+    a.legend(loc="upper left", fontsize=5.5)
+    a.set_title(r"batas $x_2 = x_1 - 2$")
+    z = np.linspace(-4, 4, 300)
+    b.plot(z, expit(z), color=BIRU, lw=1.1)
+    k = np.array([-1, -1, 1, 0, 0, 1]) * np.log(3)
+    geser = np.array([0, 0.04, 0, 0, 0.04, -0.04])
+    b.scatter(k, y + geser, c=np.where(y == 1, BIRU, JINGGA), s=14,
+              zorder=3)
+    b.scatter(k, expit(k), color=MERAH, s=10, zorder=4, marker="x")
+    b.set_xlabel(r"skor MLE $z_i$")
+    b.set_ylabel("peluang dan label")
+    b.set_title(r"$p_i \in \{1/4,\ 1/2,\ 3/4\}$")
     for ax in (a, b):
         _rapikan(ax)
     fig.tight_layout()
-    simpan(fig, "bab01-sigmoid")
+    simpan(fig, "bab01-data")
 
 
 # ============================ Bab 2 ==================================
 
+def _profil_w0(X, y, W1, W2):
+    """L minimum atas w0 untuk setiap (w1, w2) di kisi (Newton 1-D)."""
+    from scipy.special import expit
+    s = W1.ravel()[:, None] * X[None, :, 1] + W2.ravel()[:, None] * X[None, :, 2]
+    w0 = -s.mean(1)
+    for _ in range(60):
+        p = expit(w0[:, None] + s)
+        g = (p - y).sum(1)
+        h = (p * (1 - p)).sum(1) + 1e-12
+        w0 = w0 - np.clip(g / h, -1.0, 1.0)
+    z = w0[:, None] + s
+    return (np.logaddexp(0, z) - y * z).mean(1).reshape(W1.shape)
+
+
 def bab02_loss():
     from scipy.special import expit
     from bab01_data import data_mini, mle_mini, rancang
-    from bab02_loss import log_loss
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    Xf, y = data_mini()
+    X = rancang(Xf)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
     z = np.linspace(-5, 5, 400)
     a.plot(z, np.logaddexp(0, -z), color=BIRU, lw=1.1,
            label=r"log-loss $\log(1 + e^{-z})$")
     a.plot(z, (1 - expit(z)) ** 2, color=JINGGA, lw=1.0,
            label=r"kuadrat $(1 - \sigma(z))^2$")
     a.set_xlabel("skor $z$ (label $y = 1$)")
-    a.set_ylabel("loss satu titik")
+    a.set_ylabel("loss satu sampel")
     a.set_ylim(0, 4)
     a.legend(loc="upper right", fontsize=6)
-    a.set_title("loss satu titik")
-    x, y = data_mini()
-    X = rancang(x)
-    bb = np.linspace(-9, 1, 241)
-    ww = np.linspace(-0.5, 2.6, 241)
-    B, W = np.meshgrid(bb, ww)
-    T = np.stack([B.ravel(), W.ravel()], 1)
-    Z = np.logaddexp(0, T @ X.T) - (T @ X.T) * y
-    Lg = Z.mean(1).reshape(B.shape)
-    cs = b.contour(B, W, Lg, levels=[0.42, 0.45, 0.5, 0.6, 0.7, 0.9,
-                                     1.2, 1.6], colors=BIRU,
-                   linewidths=0.6)
+    a.set_title("loss satu sampel")
+    W1, W2 = np.meshgrid(np.linspace(-0.5, 2.6, 161),
+                         np.linspace(-2.8, 0.8, 161))
+    Lg = _profil_w0(X, y, W1, W2)
+    cs = b.contour(W1, W2, Lg, levels=[0.607, 0.62, 0.64, 0.66, 0.68,
+                                       0.70, 0.75, 0.85],
+                   colors=BIRU, linewidths=0.6)
     b.clabel(cs, fontsize=5, fmt=lambda v: f"{v:g}".replace(".", ","))
     m = mle_mini()
     b.plot(0, 0, "s", ms=3, color=ABU)
-    b.plot(-2.8, 0.8, "^", ms=3.5, color=JINGGA)
-    b.plot(*m, "o", ms=3.5, color=MERAH)
-    b.annotate("MLE", m, (m[0] + 1.2, m[1] + 0.6), fontsize=6,
-               color=MERAH, arrowprops=dict(arrowstyle="-", lw=0.4,
-                                            color=MERAH))
-    b.set_xlabel("$b$")
-    b.set_ylabel("$w$")
-    b.set_title("$L(b, w)$ pada data mini")
+    b.plot(1, -1, "^", ms=3.5, color=JINGGA)
+    b.plot(m[1], m[2], "o", ms=3.5, color=MERAH)
+    b.set_xlabel("$w_1$")
+    b.set_ylabel("$w_2$")
+    b.set_title(r"$L$ minimum atas $w_0$")
     for ax in (a, b):
         _rapikan(ax)
     fig.tight_layout()
@@ -191,41 +259,46 @@ def bab02_loss():
 def bab03_gradien():
     from scipy.special import expit
     from bab01_data import data_mini, mle_mini, rancang
-    from bab03_turunan import gradien
-    x, y = data_mini()
-    X = rancang(x)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
-    bb = np.linspace(-9, 1, 241)
-    ww = np.linspace(-0.5, 2.6, 241)
-    B, W = np.meshgrid(bb, ww)
-    T = np.stack([B.ravel(), W.ravel()], 1)
-    Z = T @ X.T
-    Lg = (np.logaddexp(0, Z) - Z * y).mean(1).reshape(B.shape)
-    a.contour(B, W, Lg, levels=[0.42, 0.45, 0.5, 0.6, 0.7, 0.9, 1.2,
-                                1.6], colors=ABU_GARIS, linewidths=0.6)
-    for tb in np.linspace(-8, 0, 5):
-        for tw in np.linspace(0, 2.4, 5):
-            g = gradien(np.array([tb, tw]), X, y)
-            a.arrow(tb, tw, -g[0] * 0.5, -g[1] * 0.5, color=BIRU, lw=0.5,
-                    head_width=0.1, length_includes_head=True)
+    Xf, y = data_mini()
+    X = rancang(Xf)
     m = mle_mini()
-    a.plot(*m, "o", ms=3.5, color=MERAH, zorder=4)
-    a.set_xlabel("$b$")
-    a.set_ylabel("$w$")
-    a.set_title(r"arah $-\nabla L$ (panjang $\times 0{,}5$)")
-    a.set_ylim(-0.6, 2.7)
-    for th, nama, gaya, wr in [
-            (np.zeros(2), r"$\theta = 0$", "s", ABU),
-            (np.array([-2.8, 0.8]), r"$(-2{,}8;\ 0{,}8)$", "^", JINGGA),
-            (m, "MLE", "o", MERAH)]:
-        p = expit(X @ th)
-        b.plot(x, p * (1 - p), gaya + "-", ms=3, lw=0.8, label=nama,
-               color=wr)
-    b.set_xlabel("jam belajar $x$")
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    W1, W2 = np.meshgrid(np.linspace(-0.5, 2.6, 121),
+                         np.linspace(-2.8, 0.8, 121))
+    Lg = _profil_w0(X, y, W1, W2)
+    a.contour(W1, W2, Lg, levels=[0.607, 0.62, 0.64, 0.66, 0.68, 0.70,
+                                  0.75, 0.85], colors=ABU_GARIS,
+              linewidths=0.6)
+    for t1 in np.linspace(0, 2.2, 5):
+        for t2 in np.linspace(-2.4, 0.4, 5):
+            # w0 terbaik untuk (t1, t2), lalu gradien penuh
+            s = X[:, 1] * t1 + X[:, 2] * t2
+            w0 = -s.mean()
+            for _ in range(60):
+                p = expit(w0 + s)
+                w0 -= np.clip((p - y).sum() / (p * (1 - p)).sum(), -1, 1)
+            p = expit(w0 + s)
+            g = X.T @ (p - y) / 6
+            a.arrow(t1, t2, -g[1] * 1.5, -g[2] * 1.5, color=BIRU, lw=0.5,
+                    head_width=0.06, length_includes_head=True)
+    a.plot(m[1], m[2], "o", ms=3.5, color=MERAH, zorder=4)
+    a.set_xlabel("$w_1$")
+    a.set_ylabel("$w_2$")
+    a.set_title(r"komponen $(w_1, w_2)$ dari $-\nabla L$")
+    i = np.arange(1, 7)
+    for w, nama, gaya, wr, dx in [
+            (np.zeros(3), r"$\mathbf{w} = 0$", "s", ABU, -0.22),
+            (np.array([-2.0, 1.0, -1.0]), r"$(-2, 1, -1)$", "^", JINGGA,
+             0.0),
+            (m, "MLE", "o", MERAH, 0.22)]:
+        p = expit(X @ w)
+        b.bar(i + dx, p * (1 - p), width=0.22, color=wr, label=nama)
+    b.set_xticks(i)
+    b.set_xlabel("mahasiswa $i$")
     b.set_ylabel("$d_i = p_i(1 - p_i)$")
-    b.set_ylim(0, 0.27)
-    b.legend(loc="lower center", fontsize=6)
-    b.set_title("bobot Hessian per titik")
+    b.set_ylim(0, 0.34)
+    b.legend(loc="upper center", fontsize=5.5, ncol=3)
+    b.set_title("bobot Hessian per sampel")
     for ax in (a, b):
         _rapikan(ax)
     fig.tight_layout()
@@ -238,51 +311,48 @@ def bab04_gd():
     from bab01_data import data_mini, mle_mini, rancang
     from bab02_loss import log_loss
     from bab04_gd import gd, sgd
-    x, y = data_mini()
-    X = rancang(x)
-    Xc = rancang(x - 3.5)
+    Xf, y = data_mini()
+    X = rancang(Xf)
+    mu, sd = Xf.mean(0), Xf.std(0)
+    Xs = rancang((Xf - mu) / sd)
     m = mle_mini()
     Ls = log_loss(m, X, y)
     L = np.linalg.eigvalsh(X.T @ X / 24).max()
-    Lc = 17.5 / 24
+    Lsd = np.linalg.eigvalsh(Xs.T @ Xs / 24).max()
     jm = gd(X, y, 1 / L, 4000)
-    jc = gd(Xc, y, 1 / Lc, 4000)
-    js = sgd(Xc, y, 0.5, 4000)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
-    bb = np.linspace(-6, 1, 241)
-    ww = np.linspace(-0.3, 1.9, 241)
-    B, W = np.meshgrid(bb, ww)
-    T = np.stack([B.ravel(), W.ravel()], 1)
-    Z = T @ X.T
-    Lg = (np.logaddexp(0, Z) - Z * y).mean(1).reshape(B.shape)
-    a.contour(B, W, Lg, levels=[0.415, 0.43, 0.46, 0.5, 0.6, 0.7, 0.9],
+    js = gd(Xs, y, 1 / Lsd, 4000)
+    jsgd = sgd(Xs, y, 1.0, 700)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    W1, W2 = np.meshgrid(np.linspace(-0.3, 1.6, 121),
+                         np.linspace(-1.8, 0.5, 121))
+    a.contour(W1, W2, _profil_w0(X, y, W1, W2),
+              levels=[0.607, 0.62, 0.64, 0.66, 0.68, 0.70],
               colors=ABU_GARIS, linewidths=0.6)
-    a.plot(jm[:, 0], jm[:, 1], "-", color=BIRU, lw=0.9,
-           label="x mentah")
-    a.plot(jm[[0, 10, 100, 1000], 0], jm[[0, 10, 100, 1000], 1], "o",
-           ms=2.5, color=BIRU)
-    # jalur x dipusat, dipetakan ke (b, w) = (b_c - 3,5 w, w)
-    a.plot(jc[:60, 0] - 3.5 * jc[:60, 1], jc[:60, 1], "-", color=JINGGA,
-           lw=0.9, label="x dipusat")
-    a.plot(*m, "*", ms=6, color=MERAH, zorder=4)
-    a.set_xlabel("$b$")
-    a.set_ylabel("$w$")
-    a.legend(loc="upper right", fontsize=6)
+    a.plot(jm[:, 1], jm[:, 2], "-", color=BIRU, lw=0.9, label="x mentah")
+    a.plot(jm[[10, 100, 1000], 1], jm[[10, 100, 1000], 2], "o", ms=2.5,
+           color=BIRU)
+    w12 = js[:300, 1:] / sd
+    a.plot(w12[:, 0], w12[:, 1], "-", color=JINGGA, lw=0.9,
+           label="x dibakukan")
+    a.plot(m[1], m[2], "*", ms=6, color=MERAH, zorder=4)
+    a.set_xlabel("$w_1$")
+    a.set_ylabel("$w_2$")
+    a.legend(loc="lower left", fontsize=6)
     a.set_title(r"jalur GD, $\eta = 1/L$")
     k = np.arange(4001)
     for jj, A, nama, wr in [(jm, X, "GD, x mentah", BIRU),
-                            (jc, Xc, "GD, x dipusat", JINGGA)]:
+                            (js, Xs, "GD, x dibakukan", JINGGA)]:
         sel = np.array([log_loss(t, A, y) for t in jj]) - Ls
         b.semilogy(k, np.maximum(sel, 1e-16), color=wr, lw=1.0,
                    label=nama)
-    e = np.arange(len(js)) * 6
-    sel = np.array([log_loss(t, Xc, y) for t in js]) - Ls
+    e = np.arange(len(jsgd)) * 6
+    sel = np.array([log_loss(t, Xs, y) for t in jsgd]) - Ls
     b.semilogy(e, np.maximum(sel, 1e-16), color=HIJAU, lw=1.0,
                label="SGD (per epoch)")
     b.set_xlim(0, 4000)
     b.set_ylim(1e-14, 1)
     b.set_xlabel("langkah (SGD: pembaruan)")
-    b.set_ylabel(r"$L(\theta_k) - L^*$")
+    b.set_ylabel(r"$L(\mathbf{w}_k) - L^*$")
     b.legend(loc="upper right", fontsize=6)
     b.set_title("kecepatan turun")
     for ax in (a, b):
@@ -295,45 +365,45 @@ def bab04_gd():
 
 def bab05_newton():
     from bab01_data import data_mini, mle_mini, rancang
-    from bab02_loss import log_loss
     from bab04_gd import gd
     from bab05_newton import newton
-    x, y = data_mini()
-    X = rancang(x)
+    Xf, y = data_mini()
+    X = rancang(Xf)
     m = mle_mini()
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
-    bb = np.linspace(-8, 1, 241)
-    ww = np.linspace(-0.3, 3.3, 241)
-    B, W = np.meshgrid(bb, ww)
-    T = np.stack([B.ravel(), W.ravel()], 1)
-    Z = T @ X.T
-    Lg = (np.logaddexp(0, Z) - Z * y).mean(1).reshape(B.shape)
-    a.contour(B, W, Lg, levels=[0.415, 0.43, 0.46, 0.5, 0.6, 0.8, 1.1,
-                                1.5], colors=ABU_GARIS, linewidths=0.6)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    W1, W2 = np.meshgrid(np.linspace(-0.6, 2.6, 121),
+                         np.linspace(-2.6, 0.6, 121))
+    a.contour(W1, W2, _profil_w0(X, y, W1, W2),
+              levels=[0.607, 0.62, 0.64, 0.66, 0.68, 0.70, 0.75, 0.85],
+              colors=ABU_GARIS, linewidths=0.6)
     jn, _ = newton(X, y, langkah=8)
-    a.plot(jn[:, 0], jn[:, 1], "o-", ms=2.5, lw=0.9, color=BIRU,
-           label=r"Newton dari $(0, 0)$")
-    jd, _ = newton(X, y, np.array([-6.0, 3.0]), langkah=30, redam=True)
-    a.plot(jd[:, 0], jd[:, 1], "s-", ms=2.5, lw=0.9, color=JINGGA,
-           label=r"teredam dari $(-6, 3)$")
-    a.plot(*m, "*", ms=6, color=MERAH, zorder=4)
-    a.set_xlabel("$b$")
-    a.set_ylabel("$w$")
-    a.legend(loc="lower left", fontsize=6)
-    a.set_title("jalur Newton")
+    a.plot(jn[:, 1], jn[:, 2], "o-", ms=2.5, lw=0.9, color=BIRU,
+           label="Newton dari 0")
+    jd, _ = newton(X, y, np.array([-6.0, 2.0, -2.0]), langkah=30,
+                   redam=True)
+    a.plot(jd[:, 1], jd[:, 2], "s-", ms=2.5, lw=0.9, color=JINGGA,
+           label=r"teredam dari $(-6, 2, -2)$")
+    a.plot(m[1], m[2], "*", ms=6, color=MERAH, zorder=4)
+    a.set_xlabel("$w_1$")
+    a.set_ylabel("$w_2$")
+    a.legend(loc="lower left", fontsize=5.5)
+    a.set_title(r"jalur Newton di bidang $(w_1, w_2)$")
     e = lambda j: np.maximum([np.abs(t - m).max() for t in j], 1e-16)
     L = np.linalg.eigvalsh(X.T @ X / 24).max()
     b.semilogy(e(jn), "o-", ms=2.5, lw=0.9, color=BIRU, label="Newton")
     b.semilogy(e(gd(X, y, 1 / L, 30)), "-", lw=0.9, color=ABU,
                label="GD, x mentah")
-    Xc = rancang(x - 3.5)
-    jc = gd(Xc, y, 24 / 17.5, 30)
-    jc = np.c_[jc[:, 0] - 3.5 * jc[:, 1], jc[:, 1]]
-    b.semilogy(e(jc), "-", lw=0.9, color=JINGGA, label="GD, x dipusat")
+    mu, sd = Xf.mean(0), Xf.std(0)
+    Xs = rancang((Xf - mu) / sd)
+    Ls = np.linalg.eigvalsh(Xs.T @ Xs / 24).max()
+    js = gd(Xs, y, 1 / Ls, 30)
+    w12 = js[:, 1:] / sd
+    asli = np.c_[js[:, 0] - w12 @ mu, w12]
+    b.semilogy(e(asli), "-", lw=0.9, color=JINGGA, label="GD, x dibakukan")
     b.set_xlim(0, 30)
     b.set_ylim(1e-16, 10)
     b.set_xlabel("langkah $k$")
-    b.set_ylabel(r"$\max_j|\theta_{k,j} - \hat\theta_j|$")
+    b.set_ylabel(r"$\max_j|w_{k,j} - \hat w_j|$")
     b.legend(loc="center right", fontsize=6)
     b.set_title("galat per langkah")
     for ax in (a, b):
@@ -348,33 +418,36 @@ def bab06_penalti():
     from bab01_data import data_mini, mle_mini, rancang
     from bab02_loss import log_loss
     from bab06_penalti import Y_PISAH, ista_l1, newton_l2
-    x, y = data_mini()
-    X = rancang(x)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
+    Xf, y = data_mini()
+    X = rancang(Xf)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
     t = np.linspace(0, 12, 300)
-    v = np.array([-3.5, 1.0])
+    v = np.array([-3.5, 1.0, 0.0])
     a.plot(t, [log_loss(s * v, X, Y_PISAH) for s in t], color=BIRU,
            lw=1.1, label="terpisah")
     a.plot(t, [log_loss(s * v, X, y) for s in t], color=JINGGA, lw=1.0,
            label="data mini")
     a.axhline(0, color=ABU_GARIS, lw=0.5)
-    a.set_xlabel(r"$t$ pada $\theta = t\,(-3{,}5;\ 1)$")
-    a.set_ylabel(r"$L(\theta)$")
+    a.set_xlabel(r"$t$ pada $\mathbf{w} = t\,(-3{,}5;\ 1;\ 0)$")
+    a.set_ylabel(r"$L(\mathbf{w})$")
     a.legend(loc="upper right", fontsize=6)
     a.set_title("sepanjang satu sinar")
     C = np.logspace(-2, 2, 41)
-    w2 = [newton_l2(X, y, 1 / (6 * c))[1] for c in C]
-    w2s = [newton_l2(X, Y_PISAH, 1 / (6 * c))[1] for c in C]
-    w1 = [ista_l1(X, y, 1 / (6 * c), 0.25, 4000)[1] for c in C]
-    b.semilogx(C, w2, color=BIRU, lw=1.1, label="L2, data mini")
-    b.semilogx(C, w1, color=HIJAU, lw=1.1, label="L1, data mini")
-    b.semilogx(C, w2s, color=JINGGA, lw=1.0, ls="--",
-               label="L2, terpisah")
-    b.axhline(mle_mini()[1], color=MERAH, lw=0.6, ls=":")
-    b.axvline(1 / (6 * 0.58333), color=ABU, lw=0.5, ls=":")
+    w2 = np.array([newton_l2(X, y, 1 / (6 * c)) for c in C])
+    w1 = np.array([ista_l1(X, y, 1 / (6 * c), 0.2, 6000) for c in C])
+    m = mle_mini()
+    b.semilogx(C, w2[:, 1], color=BIRU, lw=1.1, label="$w_1$, L2")
+    b.semilogx(C, w2[:, 2], color=BIRU, lw=1.0, ls="--", label="$w_2$, L2")
+    b.semilogx(C, w1[:, 1], color=HIJAU, lw=1.1, label="$w_1$, L1")
+    b.semilogx(C, w1[:, 2], color=HIJAU, lw=1.0, ls="--",
+               label="$w_2$, L1")
+    for k in (1, 2):
+        b.axhline(m[k], color=MERAH, lw=0.5, ls=":")
+    b.axvline(1 / 1.5, color=ABU, lw=0.5, ls=":")
+    b.axhline(0, color=ABU_GARIS, lw=0.5)
     b.set_xlabel("$C$ scikit-learn")
-    b.set_ylabel("$w$")
-    b.legend(loc="upper left", fontsize=6)
+    b.set_ylabel("bobot")
+    b.legend(loc="lower left", fontsize=5.5, ncol=2)
     b.set_title("jalur regularisasi")
     for ax in (a, b):
         _rapikan(ax)
@@ -388,27 +461,37 @@ def bab07_prediksi():
     from scipy.special import logit
     from bab01_data import data_mini, mle_mini, rancang
     from bab07_prediksi import kovarians, prediksi_selang
-    x, y = data_mini()
-    X = rancang(x)
+    Xf, y = data_mini()
+    X = rancang(Xf)
     m = mle_mini()
     C = kovarians(m, X)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
     g = np.linspace(0, 8, 300)
-    p, lo, hi, _ = prediksi_selang(m, C, rancang(g))
-    fig, ax = plt.subplots(figsize=(4.0, 2.3))
-    ax.fill_between(g, lo, hi, color=BIRU_MUDA, lw=0,
-                    label="selang 95% (metode delta)")
-    ax.plot(g, p, color=BIRU, lw=1.1, label=r"$\hat p(x)$")
-    ax.scatter(x, y, s=12, color=np.where(y == 1, BIRU, JINGGA), zorder=3)
-    for t, wr in [(0.5, MERAH), (0.2, HIJAU)]:
-        xt = (logit(t) - m[0]) / m[1]
-        ax.plot([0, xt], [t, t], color=wr, lw=0.6, ls="--")
-        ax.plot([xt, xt], [0, t], color=wr, lw=0.6, ls="--")
-        ax.annotate(f"$t = {angka_mat(t, 1)}$", (0.1, t + 0.03),
-                    fontsize=6, color=wr)
-    ax.set_xlabel("jam belajar $x$")
-    ax.set_ylabel("peluang lulus")
-    ax.legend(loc="lower right", fontsize=6)
-    _rapikan(ax)
+    G = rancang(np.c_[g, np.ones_like(g)])
+    p, lo, hi, _ = prediksi_selang(m, C, G)
+    a.fill_between(g, lo, hi, color=BIRU_MUDA, lw=0, label="selang 95%")
+    a.plot(g, p, color=BIRU, lw=1.1, label=r"$\hat p$")
+    a.axvline(6, color=ABU_GARIS, lw=0.5, ls=":")
+    a.set_xlabel("$x_1$ (jam belajar), $x_2 = 1$")
+    a.set_ylabel("peluang lulus")
+    a.legend(loc="upper left", fontsize=6)
+    a.set_title("metode delta")
+    g1 = np.linspace(0, 7, 100)
+    for t, wr in [(0.5, MERAH), (0.25, HIJAU), (0.2, JINGGA)]:
+        c = 2 + logit(t) / np.log(3)
+        b.plot(g1, g1 - c, color=wr, lw=0.9,
+               label=f"$t = {angka_mat(t, 2)}$")
+    for k, (wr, mk) in enumerate([(JINGGA, "s"), (BIRU, "o")]):
+        s = y == k
+        b.scatter(Xf[s, 0], Xf[s, 1], color=wr, marker=mk, s=16, zorder=3)
+    b.set_xlim(0, 7)
+    b.set_ylim(-0.6, 3.8)
+    b.set_xlabel("$x_1$")
+    b.set_ylabel("$x_2$")
+    b.legend(loc="upper left", fontsize=6)
+    b.set_title(r"batas tebakan $\hat p = t$")
+    for ax in (a, b):
+        _rapikan(ax)
     fig.tight_layout()
     simpan(fig, "bab07-prediksi")
 
@@ -416,30 +499,35 @@ def bab07_prediksi():
 # ============================ Bab 8 ==================================
 
 def bab08_kurva():
-    from scipy.special import expit
     from sklearn import metrics
-    from bab01_data import data_mini, mle_mini, rancang
-    x, y = data_mini()
-    p = expit(rancang(x) @ mle_mini())
+    from bab01_data import data_mini
+    from bab08_performa import peluang_mini
+    p, y = peluang_mini()
+    Xf, _ = data_mini()
     fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
     fpr, tpr, _ = metrics.roc_curve(y, p, drop_intermediate=False)
-    a.fill_between(fpr, tpr, step=None, color=BIRU_MUDA, lw=0)
-    a.plot(fpr, tpr, "o-", ms=3, color=BIRU, lw=1.0)
-    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls="--")
-    a.annotate("AUC = 8/9", (0.45, 0.35), fontsize=7, color=BIRU)
+    a.fill_between(fpr, tpr, color=BIRU_MUDA, lw=0)
+    a.plot(fpr, tpr, "o-", ms=3, color=BIRU, lw=1.0,
+           label="$\\hat p$: AUC = 13/18")
+    f1, t1, _ = metrics.roc_curve(y, Xf[:, 0], drop_intermediate=False)
+    a.plot(f1, t1, "s--", ms=2.5, color=JINGGA, lw=0.8,
+           label="$x_1$ saja: AUC = 2/3")
+    a.plot([0, 1], [0, 1], color=ABU_GARIS, lw=0.6, ls=":")
     a.set_xlabel("FPR = 1 - spesifisitas")
     a.set_ylabel("TPR = recall")
     a.set_title("kurva ROC")
+    a.legend(loc="lower right", fontsize=5.5)
     a.set_aspect("equal")
-    urut = np.argsort(-p)
-    tp = np.cumsum(y[urut])
-    prec = tp / np.arange(1, 7)
-    rec = tp / 3
-    b.step(np.r_[0, rec], np.r_[1, prec], where="pre", color=JINGGA,
-           lw=1.0)
+    rec, prec = [], []
+    for t in np.unique(p)[::-1]:
+        tp = np.sum((p >= t) & (y == 1))
+        rec.append(tp / 3)
+        prec.append(tp / np.sum(p >= t))
+    b.step(np.r_[0, rec], np.r_[prec[0], prec], where="pre",
+           color=JINGGA, lw=1.0)
     b.plot(rec, prec, "o", ms=3, color=JINGGA)
     b.axhline(0.5, color=ABU_GARIS, lw=0.6, ls="--")
-    b.annotate("AP = 11/12", (0.1, 0.62), fontsize=7, color=JINGGA)
+    b.annotate("AP = 2/3", (0.45, 0.82), fontsize=7, color=JINGGA)
     b.set_xlim(-0.02, 1.02)
     b.set_ylim(0, 1.05)
     b.set_xlabel("recall")
@@ -467,10 +555,10 @@ def bab09_reliabilitas():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for nama, C, kol, wr, gaya in [
-                ("3 peubah, MLE", None, slice(0, 3), HIJAU, "o"),
-                ("20 peubah, MLE", None, slice(0, 20), MERAH, "s"),
-                ("20 peubah, C = 0,01", 0.01, slice(0, 20), JINGGA, "^"),
-                ("20 peubah, MLE + Platt", "platt", slice(0, 20), BIRU,
+                ("3 fitur, MLE", None, slice(0, 3), HIJAU, "o"),
+                ("20 fitur, MLE", None, slice(0, 20), MERAH, "s"),
+                ("20 fitur, C = 0,01", 0.01, slice(0, 20), JINGGA, "^"),
+                ("20 fitur, MLE + Platt", "platt", slice(0, 20), BIRU,
                  "D")]:
             if C == "platt":
                 m = LogisticRegression(penalty=None, solver="newton-cholesky",
@@ -504,33 +592,32 @@ def bab10_profil():
     from bab01_data import data_mini, mle_mini, rancang
     from bab07_prediksi import kovarians
     from bab10_inferensi import log_kem, profil, selang_profil
-    x, y = data_mini()
-    X = rancang(x)
+    Xf, y = data_mini()
+    X = rancang(Xf)
     m = mle_mini()
-    se = np.sqrt(kovarians(m, X)[1, 1])
+    C = kovarians(m, X)
     lmax = log_kem(m, X, y)
-    w = np.linspace(-1.5, 5.5, 141)
-    dev = np.array([2 * (lmax - profil(X, y, 1, v)) for v in w])
-    wald = ((w - m[1]) / se) ** 2
-    fig, ax = plt.subplots(figsize=(4.0, 2.4))
-    ax.plot(w, dev, color=BIRU, lw=1.1, label="profil (rasio kemungkinan)")
-    ax.plot(w, wald, color=JINGGA, lw=1.0, ls="--",
-            label="hampiran kuadratik (Wald)")
-    ax.axhline(3.8415, color=ABU, lw=0.6, ls=":")
-    a, b = selang_profil(X, y, 1)
-    for v in (a, b):
-        ax.plot([v, v], [0, 3.8415], color=BIRU, lw=0.6)
-    for v in (m[1] - 1.96 * se, m[1] + 1.96 * se):
-        ax.plot([v, v], [0, 3.8415], color=JINGGA, lw=0.6, ls="--")
-    ax.plot([0], [3.3618], "o", ms=3, color=MERAH)
-    ax.annotate("$w = 0$: $G = 3{,}36$", (0, 3.36), (0.4, 6.0),
-                fontsize=6, color=MERAH,
-                arrowprops=dict(arrowstyle="-", lw=0.4, color=MERAH))
-    ax.set_ylim(0, 9)
-    ax.set_xlabel("$w$")
-    ax.set_ylabel(r"$2(\hat\ell - \ell_{\mathrm{p}}(w))$")
-    ax.legend(loc="upper right", fontsize=6)
-    _rapikan(ax)
+    fig, sumbu = plt.subplots(1, 2, figsize=(4.7, 2.3), sharey=True)
+    for ax, j, rentang in [(sumbu[0], 1, (-3, 7)), (sumbu[1], 2, (-8, 5))]:
+        se = np.sqrt(C[j, j])
+        w = np.linspace(*rentang, 141)
+        dev = np.array([2 * (lmax - profil(X, y, j, v)) for v in w])
+        ax.plot(w, dev, color=BIRU, lw=1.1, label="profil")
+        ax.plot(w, ((w - m[j]) / se) ** 2, color=JINGGA, lw=1.0,
+                ls="--", label="Wald")
+        ax.axhline(3.8415, color=ABU, lw=0.6, ls=":")
+        for v in selang_profil(X, y, j):
+            ax.plot([v, v], [0, 3.8415], color=BIRU, lw=0.6)
+        for v in (m[j] - 1.96 * se, m[j] + 1.96 * se):
+            ax.plot([v, v], [0, 3.8415], color=JINGGA, lw=0.6, ls="--")
+        g0 = 2 * (lmax - profil(X, y, j, 0.0))
+        ax.plot([0], [g0], "o", ms=3, color=MERAH)
+        ax.set_ylim(0, 9)
+        ax.set_xlabel(f"$w_{j}$")
+        ax.set_title(f"profil $w_{j}$")
+        _rapikan(ax)
+    sumbu[0].set_ylabel(r"$2(\hat\ell - \ell_{\mathrm{p}})$")
+    sumbu[0].legend(loc="upper center", fontsize=6)
     fig.tight_layout()
     simpan(fig, "bab10-profil")
 
@@ -540,7 +627,7 @@ def bab10_profil():
 def bab11_tafsiran():
     from scipy.special import expit
     from bab01_data import data_mini, mle_mini, rancang
-    x, y = data_mini()
+    Xf, y = data_mini()
     m = mle_mini()
     fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
     p0 = np.linspace(0.001, 0.95, 300)
@@ -553,19 +640,21 @@ def bab11_tafsiran():
     a.set_ylabel("rasio risiko $p_1/p_0$")
     a.legend(loc="upper right", fontsize=6)
     a.set_title("OR bukan rasio risiko")
-    g = np.linspace(0, 7, 300)
-    pg = expit(m[0] + m[1] * g)
+    g = np.linspace(-4, 4, 300)
+    pg = expit(g)
     b.plot(g, m[1] * pg * (1 - pg), color=BIRU, lw=1.1,
-           label=r"$\hat w\,\hat p(1 - \hat p)$")
-    p = expit(rancang(x) @ m)
-    b.plot(x, m[1] * p * (1 - p), "o", ms=3, color=BIRU)
+           label=r"$\hat w_1\,\hat p(1 - \hat p)$")
+    z = rancang(Xf) @ m
+    p = expit(z)
+    b.plot(z, m[1] * p * (1 - p), "o", ms=3, color=BIRU)
     ame = np.mean(m[1] * p * (1 - p))
     b.axhline(ame, color=MERAH, lw=0.8, ls="--",
               label=f"AME = {angka(ame, 4)}")
-    b.set_xlabel("jam belajar $x$")
-    b.set_ylabel(r"$\partial\hat p/\partial x$")
+    b.set_xlabel(r"skor $z = \mathbf{x}^{\top}\hat{\mathbf{w}}$")
+    b.set_ylabel(r"$\partial\hat p/\partial x_1$")
+    b.set_ylim(0, 0.38)
     b.legend(loc="upper left", fontsize=6)
-    b.set_title("efek marginal")
+    b.set_title("efek marginal jam belajar")
     for ax in (a, b):
         _rapikan(ax)
     fig.tight_layout()
@@ -579,37 +668,47 @@ def bab12_diagnostik():
     from scipy.special import expit
     from bab01_data import BENIH, data_mini, mle_mini, rancang
     from bab12_diagnostik import cook, leverage
-    x, y = data_mini()
-    X = rancang(x)
+    Xf, y = data_mini()
+    X = rancang(Xf)
     p = expit(X @ mle_mini())
     h, _ = leverage(X, p)
-    D = cook(y, p, h, 2)
-    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.2))
-    a.bar(x - 0.18, h, width=0.36, color=BIRU, label="leverage $h_i$")
-    a.bar(x + 0.18, D, width=0.36, color=MERAH, label="Cook $D_i$")
-    a.set_xticks(x)
-    a.set_xlabel("mahasiswa (jam belajar)")
-    a.legend(loc="upper left", fontsize=6)
-    a.set_title("data mini")
-    a.set_ylim(0, 0.95)
+    D = cook(y, p, h, 3)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(4.7, 2.3))
+    g = np.linspace(0, 7, 50)
+    a.plot(g, g - 2, color=ABU_GARIS, lw=0.6, ls="--")
+    for k, (wr, mk) in enumerate([(JINGGA, "s"), (BIRU, "o")]):
+        s = y == k
+        a.scatter(Xf[s, 0], Xf[s, 1], s=12 + 60 * D[s], color=wr,
+                  marker=mk, alpha=0.75, zorder=3)
+        a.plot([], [], mk, ms=3, color=wr,
+               label="lulus" if k else "tidak lulus")
+    geser = [(-14, 6), (-14, 6), (12, -3), (8, -3), (-20, 6), (10, -10)]
+    for i in range(6):
+        a.annotate(angka(D[i], 2), (Xf[i, 0], Xf[i, 1]), geser[i],
+                   textcoords="offset points", fontsize=5.5, color=ABU)
+    a.set_xlim(0, 7.8)
+    a.set_ylim(-1.2, 4.2)
+    a.set_xlabel("$x_1$")
+    a.set_ylabel("$x_2$")
+    a.legend(loc="upper left", fontsize=5.5)
+    a.set_title("jarak Cook (luas penanda)")
     rng = np.random.default_rng(BENIH)
     n = 1000
     x1 = rng.normal(size=n)
     x2 = 0.9 * x1 + np.sqrt(1 - 0.81) * rng.normal(size=n)
     x3 = rng.normal(size=n)
-    eta = -0.5 + x1 + 0.5 * x2 + 0.8 * x3 - 0.6 * x3 ** 2
-    yy = (rng.random(n) < expit(eta)).astype(int)
-    for A, nama, wr, g in [(np.c_[x1, x2, x3], "linear dalam $x_3$", JINGGA,
-                            "o"),
-                           (np.c_[x1, x2, x3, x3 ** 2], "dengan $x_3^2$",
-                            BIRU, "s")]:
+    z = -0.5 + x1 + 0.5 * x2 + 0.8 * x3 - 0.6 * x3 ** 2
+    yy = (rng.random(n) < expit(z)).astype(int)
+    for A, nama, wr, gy in [(np.c_[x1, x2, x3], "linear dalam $x_3$",
+                             JINGGA, "o"),
+                            (np.c_[x1, x2, x3, x3 ** 2], "dengan $x_3^2$",
+                             BIRU, "s")]:
         r = sm.Logit(yy, sm.add_constant(A)).fit(disp=0)
         pp = r.predict(sm.add_constant(A))
-        urut = np.argsort(x3)
-        kel = np.array_split(urut, 20)
+        kel = np.array_split(np.argsort(x3), 20)
         mx = [x3[k].mean() for k in kel]
         mr = [(yy[k] - pp[k]).mean() for k in kel]
-        b.plot(mx, mr, g + "-", ms=2.5, lw=0.8, color=wr, label=nama)
+        b.plot(mx, mr, gy + "-", ms=2.5, lw=0.8, color=wr, label=nama)
     se = 2 * np.sqrt(0.25 / 50)
     b.axhspan(-se, se, color=ABU_GARIS, alpha=0.4, lw=0)
     b.axhline(0, color=ABU, lw=0.5)
@@ -641,7 +740,8 @@ def bab13_validasi():
     tampak = roc_auc_score(y, m.predict_proba(X)[:, 1])
     uji = roc_auc_score(yu, m.predict_proba(Xu)[:, 1])
     auc = []
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10, random_state=0)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10,
+                                 random_state=0)
     for a, b in cv.split(X, y):
         mm = model_mle().fit(X[a], y[a])
         auc.append(roc_auc_score(y[b], mm.predict_proba(X[b])[:, 1]))
@@ -701,10 +801,10 @@ def bab14_perluasan():
     a.legend(loc="upper left", fontsize=6)
     a.set_title("prevalensi 5%")
     rng = np.random.default_rng(BENIH + 7)
-    n = 3000
-    Xm = rng.normal(size=(n, 2))
+    mm = 3000
+    Xm = rng.normal(size=(mm, 2))
     Wb = np.array([[0.0, 0.5, -0.5], [0.0, 1.0, -1.0], [0.0, -0.5, 1.5]])
-    A = np.c_[np.ones(n), Xm]
+    A = np.c_[np.ones(mm), Xm]
     P = softmax(A @ Wb, axis=1)
     ym = np.array([rng.choice(3, p=q) for q in P])
     h = minimize(softmax_loss, np.zeros(9), args=(A, np.eye(3)[ym]),
@@ -716,7 +816,7 @@ def bab14_perluasan():
     kelas = np.argmax(Ag @ W, axis=1).reshape(G1.shape)
     b.contourf(G1, G2, kelas, levels=[-0.5, 0.5, 1.5, 2.5],
                colors=[BIRU_MUDA, JINGGA_MUDA, HIJAU_MUDA])
-    sub = rng.choice(n, 300, replace=False)
+    sub = rng.choice(mm, 300, replace=False)
     for k, wr in enumerate([BIRU, JINGGA, HIJAU]):
         s = sub[ym[sub] == k]
         b.scatter(Xm[s, 0], Xm[s, 1], s=3, color=wr, label=f"kelas {k}")
@@ -743,24 +843,25 @@ def bab15_studi():
     warnings.simplefilter("ignore")
     d = baca_jantung()
     X, y, nama = rancangan(d)
-    th = mle(X, y)
-    k = X.shape[1] - 1
+    w = mle(X, y)
+    n = X.shape[1] - 1
     fig, (a, b) = plt.subplots(1, 2, figsize=(4.9, 3.2),
                                gridspec_kw={"width_ratios": [1.25, 1]})
-    for j in range(1, k + 1):
+    for j in range(1, n + 1):
         lo, hi = selang_profil(X, y, j)
-        yy = k - j
+        yy = n - j
         a.plot([np.exp(lo), np.exp(hi)], [yy, yy], color=BIRU, lw=0.9)
-        a.plot([np.exp(th[j])], [yy], "s", ms=2.8, color=BIRU)
+        a.plot([np.exp(w[j])], [yy], "s", ms=2.8, color=BIRU)
     a.axvline(1, color=ABU, lw=0.6, ls="--")
     a.set_xscale("log")
-    a.set_yticks(range(k))
+    a.set_yticks(range(n))
     a.set_yticklabels(nama[1:][::-1], fontsize=5.5)
     kunci_label(a, "y")
     a.set_xlabel("odds ratio (selang profil 95%)")
     a.set_title("model tafsiran")
     Z = X[:, 1:]
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=1, random_state=0)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=1,
+                                 random_state=0)
     for mk, nm, wr, g in [(model_mle, "MLE", MERAH, "o"),
                           (model_l2, "L2 (C dari CV)", BIRU, "s")]:
         q = np.zeros(len(y))

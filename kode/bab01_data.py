@@ -1,48 +1,54 @@
 """Data mini yang dipakai di seluruh buku, dan matriks rancangannya.
 
-Enam mahasiswa: jam belajar x = 1, ..., 6 dan lulus (1) atau tidak
-(0). Kedua kelas tumpang tindih di x = 3 dan x = 4, sehingga taksiran
-kemungkinan maksimum ada. Data simetris terhadap x = 3,5 (x -> 7 - x
-sekaligus y -> 1 - y), sehingga titik setengah MLE tepat 3,5.
+Enam mahasiswa (sampel i = 1, ..., 6), dua fitur, satu target:
+  x1 = jam belajar per minggu, x2 = banyak absen, y = lulus (1/0).
+Kedua kelas tidak dapat dipisahkan oleh garis apa pun, sehingga
+taksiran kemungkinan maksimum (MLE) ada. MLE-nya tepat
+w = ln 3 * (-2, 1, -1), dengan peluang 1/4, 1/2, atau 3/4.
 """
 import numpy as np
 
-BENIH = 20261005
+BENIH = 20261006
+
+TABEL = np.array([
+    # x1  x2  y
+    [1, 0, 0],
+    [2, 1, 0],
+    [3, 0, 1],
+    [4, 2, 1],
+    [5, 3, 1],
+    [6, 3, 0],
+])
 
 
 def data_mini():
-    x = np.arange(1.0, 7.0)
-    y = np.array([0, 0, 1, 0, 1, 1])
-    return x, y
+    """Matriks fitur X (6 x 2) dan vektor target y (6,)."""
+    return TABEL[:, :2].astype(float), TABEL[:, 2].copy()
 
 
-def rancang(x):
-    """Matriks rancangan: kolom satu untuk intersep, lalu peubah."""
-    x = np.asarray(x, dtype=float)
-    if x.ndim == 1:
-        x = x[:, None]
-    return np.column_stack([np.ones(len(x)), x])
+def rancang(X):
+    """Menambahkan kolom x0 = 1: X berukuran m x (n + 1)."""
+    X = np.asarray(X, dtype=float)
+    if X.ndim == 1:
+        X = X[:, None]
+    return np.column_stack([np.ones(len(X)), X])
 
 
 def mle_mini():
-    """MLE data mini, theta = (b, w), sampai ketelitian mesin.
-
-    Dihitung dengan metode Newton dari theta = 0 (Bab 5), yang pada
-    data ini konvergen dalam tujuh langkah.
-    """
-    x, y = data_mini()
-    X = rancang(x)
-    theta = np.zeros(2)
-    for _ in range(12):
-        p = 1 / (1 + np.exp(-(X @ theta)))
-        g = X.T @ (p - y)
-        H = X.T @ (X * (p * (1 - p))[:, None])
-        theta = theta - np.linalg.solve(H, g)
-    return theta
+    """MLE data mini (w0, w1, w2) dengan metode Newton dari w = 0."""
+    X, y = data_mini()
+    A = rancang(X)
+    w = np.zeros(3)
+    for _ in range(20):
+        p = 1 / (1 + np.exp(-(A @ w)))
+        g = A.T @ (p - y)
+        H = A.T @ (A * (p * (1 - p))[:, None])
+        w = w - np.linalg.solve(H, g)
+    return w
 
 
 if __name__ == "__main__":
-    x, y = data_mini()
-    print("x:", x)
+    X, y = data_mini()
+    print("X:\n", X)
     print("y:", y)
-    print("X:\n", rancang(x))
+    print("MLE:", mle_mini(), np.log(3) * np.array([-2, 1, -1]))

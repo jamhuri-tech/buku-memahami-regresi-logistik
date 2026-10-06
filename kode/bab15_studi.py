@@ -1,6 +1,6 @@
 """Bab 15: studi kasus riset utuh pada data Heart Disease Cleveland.
 
-Protokol (ditetapkan sebelum melihat hasil): 17 parameter peubah
+Protokol (ditetapkan sebelum melihat hasil): 17 kolom fitur
 (Bab 15, tabel protokol); model tafsiran MLE dengan selang profil;
 model prediksi MLE dan L2 (C dipilih dengan CV di dalam lipatan);
 validasi dengan CV 5 lipatan x 10 dan koreksi optimisme bootstrap.
@@ -21,7 +21,7 @@ from bab07_prediksi import kovarians
 from bab09_kalibrasi import intersep_kemiringan
 from bab10_inferensi import log_kem, mle, selang_profil
 from bab12_diagnostik import cook, leverage, vif
-from bab13_validasi import delong, n_riley
+from bab13_validasi import delong, m_riley
 from bab15_data import baca_jantung, rancangan
 
 warnings.simplefilter("ignore")
@@ -41,27 +41,28 @@ def model_l2():
 if __name__ == "__main__":
     d = baca_jantung()
     X, y, nama = rancangan(d)
-    n, k = X.shape[0], X.shape[1] - 1
+    m, n = X.shape[0], X.shape[1] - 1
     print("(1) data dan ukuran sampel:")
-    print(f"    n = {n}, sakit = {y.sum()} ({y.mean():.3f}),"
-          f" parameter peubah = {k}")
-    print(f"    EPV = {min(y.sum(), n - y.sum()) / k:.2f}")
+    print(f"    X berukuran {m} x {n + 1}, y berukuran {m}")
+    print(f"    m = {m}, sakit = {y.sum()} ({y.mean():.3f}),"
+          f" fitur n = {n}")
+    print(f"    EPV = {min(y.sum(), m - y.sum()) / n:.2f}")
 
-    th = mle(X, y)
-    se = np.sqrt(np.diag(kovarians(th, X)))
+    w = mle(X, y)
+    se = np.sqrt(np.diag(kovarians(w, X)))
     print("(2) model tafsiran: OR, selang Wald, selang profil")
-    print("    peubah              OR    Wald            profil")
-    for j in range(1, k + 1):
+    print("    fitur               OR    Wald            profil")
+    for j in range(1, n + 1):
         a, b = selang_profil(X, y, j)
-        print(f"    {nama[j]:<18} {np.exp(th[j]):5.2f}"
-              f"  ({np.exp(th[j] - 1.96 * se[j]):5.2f},"
-              f"{np.exp(th[j] + 1.96 * se[j]):6.2f})"
+        print(f"    {nama[j]:<18} {np.exp(w[j]):5.2f}"
+              f"  ({np.exp(w[j] - 1.96 * se[j]):5.2f},"
+              f"{np.exp(w[j] + 1.96 * se[j]):6.2f})"
               f"  ({np.exp(a):5.2f},{np.exp(b):6.2f})")
-    ll = log_kem(th, X, y)
+    ll = log_kem(w, X, y)
     print("    uji rasio kemungkinan per kelompok:")
     for g, idx in [("nyeri", [3, 4, 5]), ("lereng", [13, 14]),
                    ("thal", [16, 17])]:
-        sisa = [j for j in range(k + 1) if j not in idx]
+        sisa = [j for j in range(n + 1) if j not in idx]
         G = 2 * (ll - log_kem(mle(X[:, sisa], y), X[:, sisa], y))
         print(f"      {g:<7} G = {G:6.2f}, db {len(idx)},"
               f" p = {chi2.sf(G, len(idx)):.4f}")
@@ -74,25 +75,26 @@ if __name__ == "__main__":
         G = 2 * (log_kem(mle(X2, y), X2, y) - ll)
         print(f"    suku kuadrat {nm:<11}: G = {G:5.2f},"
               f" p = {chi2.sf(G, 1):.4f}")
-    p = expit(X @ th)
+    p = expit(X @ w)
     h, _ = leverage(X, p)
-    D = cook(y, p, h, k + 1)
+    D = cook(y, p, h, n + 1)
     i = int(np.argmax(D))
     t2 = mle(np.delete(X, i, 0), np.delete(y, i))
+    j = int(np.argmax(np.abs(t2 - w)))
     print(f"    Cook terbesar = {D[i]:.4f} (pasien {i});"
           f" tanpa pasien itu,")
-    print(f"    perubahan |koefisien| terbesar = {np.abs(t2 - th).max():.4f}"
-          f" ({nama[int(np.argmax(np.abs(t2 - th)))]})")
+    print(f"    perubahan |w_j| terbesar = {np.abs(t2 - w).max():.4f}"
+          f" (j = {j}, {nama[j]})")
 
     print("(4) model prediksi, CV 5 lipatan x 10:")
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10, random_state=0)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10,
+                                 random_state=0)
     hasil = {"MLE": [], "L2": []}
-    oof = {"MLE": np.zeros((10, n)), "L2": np.zeros((10, n))}
+    oof = {"MLE": np.zeros((10, m)), "L2": np.zeros((10, m))}
     Z = X[:, 1:]
     for f, (a, b) in enumerate(cv.split(Z, y)):
         for nm, mk in [("MLE", model_mle), ("L2", model_l2)]:
-            m = mk().fit(Z[a], y[a])
-            q = m.predict_proba(Z[b])[:, 1]
+            q = mk().fit(Z[a], y[a]).predict_proba(Z[b])[:, 1]
             oof[nm][f // 5, b] = q
             hasil[nm].append((roc_auc_score(y[b], q), log_loss(y[b], q),
                               brier_score_loss(y[b], q)))
@@ -100,18 +102,20 @@ if __name__ == "__main__":
     for nm in hasil:
         r = np.array(hasil[nm])
         km = np.mean([intersep_kemiringan(y, o)[1] for o in oof[nm]])
-        print(f"    {nm:<5}  {r[:, 0].mean():.4f} ({r[:, 0].std(ddof=1):.4f})"
-              f"  {r[:, 1].mean():.4f}    {r[:, 2].mean():.4f}  {km:.4f}")
+        print(f"    {nm:<5}  {r[:, 0].mean():.4f}"
+              f" ({r[:, 0].std(ddof=1):.4f})"
+              f"  {r[:, 1].mean():.4f}    {r[:, 2].mean():.4f}"
+              f"  {km:.4f}")
     a10 = delong(y, oof["L2"][0], oof["MLE"][0])
     print("    DeLong L2 lawan MLE (pengulangan pertama):")
     print(f"      selisih AUC {a10[2]:.4f}, p = {a10[4]:.4f}")
 
     rng = np.random.default_rng(BENIH)
-    m = model_mle().fit(Z, y)
-    tampak = roc_auc_score(y, m.predict_proba(Z)[:, 1])
+    tampak = roc_auc_score(
+        y, model_mle().fit(Z, y).predict_proba(Z)[:, 1])
     opt, kem = [], []
     for _ in range(200):
-        i = rng.integers(0, n, n)
+        i = rng.integers(0, m, m)
         mb = model_mle().fit(Z[i], y[i])
         opt.append(roc_auc_score(y[i], mb.predict_proba(Z[i])[:, 1])
                    - roc_auc_score(y, mb.predict_proba(Z)[:, 1]))
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     print(f"    AUC tampak {tampak:.4f}, optimisme {np.mean(opt):.4f},"
           f" terkoreksi {tampak - np.mean(opt):.4f}")
     print(f"    kemiringan kalibrasi (susut) = {np.mean(kem):.4f}")
-    r2cs = 1 - np.exp(2 * (log_kem(np.r_[logit(y.mean()), np.zeros(k)],
-                                   X, y) - ll) / n)
+    l0 = log_kem(np.r_[logit(y.mean()), np.zeros(n)], X, y)
+    r2cs = 1 - np.exp(2 * (l0 - ll) / m)
     print(f"    R2 Cox-Snell = {r2cs:.4f},"
-          f" n Riley = {n_riley(k, r2cs):.0f}")
+          f" m Riley = {m_riley(n, r2cs):.0f}")

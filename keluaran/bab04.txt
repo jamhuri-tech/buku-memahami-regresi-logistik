@@ -2,28 +2,27 @@
 # Diperiksa oleh periksa.py terhadap kode/bab04_*.py.
 
 === blok 1 ===
-(1) L = lambda_maks(X^T X)/(4n) = 3.9960, 1/L = 0.2502
+(1) L = lambda_maks(X^T X)/(4m) = 4.8555, 1/L = 0.2060
     GD, eta = 0.25, tiga langkah pertama:
-     k        b         w        L
-     0    0.0000    0.0000   0.6931
-     1    0.0000    0.1458   0.6475
-     2   -0.0308    0.1592   0.6431
-     3   -0.0624    0.1675   0.6389
+     k      w0        w1        w2        L
+     0    0.0000    0.0000    0.0000   0.6931
+     1    0.0000    0.0625    0.0208   0.6857
+     2   -0.0155    0.0572    0.0091   0.6844
+     3   -0.0278    0.0652    0.0038   0.6835
 
 === blok 2 ===
-(2) langkah sampai max|g| < 1e-6:
-    x mentah,   eta = 1/L: 3001
-    x dipusat,  eta = 1/L: 35
-    dipusat: b_c = 0.0000, w = 1.2140, b = -4.2491
-    L dipusat = 0.7292; MLE b = -4.2491, w = 1.2140
+(2) langkah sampai max|g| < 1e-6, eta = 1/L:
+    x mentah   : L = 4.8555, kondisi =   190.1, langkah 2614
+    x dipusat  : L = 1.0698, kondisi =    19.4, langkah 263
+    x dibakukan: L = 0.4730, kondisi =    17.5, langkah 228
 
 === blok 3 ===
-(3) SGD (urutan 1..6, eta = 0.5 tetap), tiga pembaruan:
-    i = 1: p = 0.5000, theta = (-0.2500, -0.2500)
-    i = 2: p = 0.3208, theta = (-0.4104, -0.5708)
-    i = 3: p = 0.1069, theta = (0.0361, 0.7688)
-    SGD acak pada x dipusat, eta_k = 0.5/(1 + k/n):
-      epoch   10: L - L* = 1.1e-03
-      epoch  100: L - L* = 7.2e-05
-      epoch 1000: L - L* = 6.0e-06
-      epoch 2000: L - L* = 3.0e-06
+(3) SGD (urutan 1, 2, 3, eta = 0.5 tetap):
+    i = 1: p = 0.5000, w = (-0.2500, -0.2500, 0.0000)
+    i = 2: p = 0.3208, w = (-0.4104, -0.5708, -0.1604)
+    i = 3: p = 0.1069, w = (0.0361, 0.7688, -0.1604)
+    SGD acak, x dibakukan, eta_k = 1/(1 + k/(10m)):
+      epoch   10: L - L* = 7.1e-03
+      epoch  100: L - L* = 2.2e-04
+      epoch 1000: L - L* = 1.7e-06
+      epoch 4000: L - L* = 1.4e-07

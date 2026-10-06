@@ -2,28 +2,38 @@
 # Diperiksa oleh periksa.py terhadap kode/bab11_*.py.
 
 === blok 1 ===
-(1) odds ratio jam belajar (data mini):
-    per 1 jam : OR =   3.3670, selang Wald (0.5629, 20.14)
-    per 2 jam : OR =  11.3368, selang Wald (0.3169, 405.58)
-    per SD x  : OR =   9.6914, selang Wald (0.3413, 275.19)
+(1) odds ratio (data mini, fitur lain tetap):
+    x1 per 1 jam   : OR =  3.0000, selang (0.2771, 32.48)
+    x1 per 2 jam   : OR =  9.0000, selang (0.0768, 1055.26)
+    x1 per SD      : OR =  7.8093, selang (0.0906, 673.12)
+    x2 per 1 absen : OR =  0.3333, selang (0.0139, 8.00)
+    x2 per SD      : OR =  0.2200, selang (0.0028, 17.56)
+    SD x1 = 1.8708, SD x2 = 1.3784
 
 === blok 2 ===
-(2) tabel 2 x 2 (merokok, sakit):
-    ad/bc = 3.5000, logistik e^w = 3.5000
-    SE rumus = 0.4226, SE logistik = 0.4226
-    e^b = odds tidak merokok = 0.4286 (= 15/35)
+(2) penyesuaian: OR jam belajar tanpa dan dengan absen
+    model x1 saja : w = [-1.2646  0.3613], OR = 1.4352
+    model x1 + x2 : w = [-2.1972  1.0986 -1.0986], OR = 3.0000
+    korelasi x1, x2 = 0.8919
 
 === blok 3 ===
-(3) interaksi dua peubah biner (A, B):
-    b = -1.3863, wA = 1.3863, wB = 1.3863, wAB = 0.8109
-    OR A bila B=0: 4.0000, bila B=1: 9.0000, rasio: 2.2500
+(3) tabel 2 x 2 (merokok, sakit):
+    ad/bc = 3.5000, logistik e^w1 = 3.5000
+    SE rumus = 0.4226, SE logistik = 0.4226
+    e^w0 = odds tidak merokok = 0.4286 (= 15/35)
 
 === blok 4 ===
-(4) efek marginal jam belajar (data mini):
-    AME = 0.1586, efek di x = 3.5: 0.3035
-    statsmodels get_margeff: 0.1586
+(4) interaksi dua fitur biner (x1, x2):
+    w = (-1.3863, 1.3863, 1.3863, 0.8109)
+    OR x1 bila x2=0: 4.0000, bila x2=1: 9.0000, rasio: 2.2500
 
 === blok 5 ===
-(5) ketidakruntuhan (dua strata sama besar):
-    OR x bersyarat strata = 4.0000
-    OR x marginal         = 3.4490
+(5) efek marginal (data mini):
+    jumlah d_i = 1.2500, rata-rata = 0.2083
+    AME x1 = 0.2289, AME x2 = -0.2289, di p = 1/2: 0.2747
+    statsmodels get_margeff: [ 0.2289 -0.2289]
+
+=== blok 6 ===
+(6) ketidakruntuhan (dua strata sama besar):
+    OR x1 bersyarat strata = 4.0000
+    OR x1 marginal         = 3.4490

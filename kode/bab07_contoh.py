@@ -1,58 +1,60 @@
 """Memeriksa setiap bilangan Contoh Soal Bab 7."""
+from fractions import Fraction as F
+
 import numpy as np
 from scipy.special import expit, logit
 
 from bab01_data import data_mini, mle_mini, rancang
-from bab07_prediksi import kovarians, prediksi_selang
+from bab07_prediksi import kovarians
 
 
 def r(v, n=4):
     return round(float(v), n)
 
 
-x, y = data_mini()
-X = rancang(x)
+Xf, y = data_mini()
+X = rancang(Xf)
 m = mle_mini()
 
-# Contoh Soal 7.1: peluang untuk x0 = 4.5 dan 2.5
-assert r(m[0] + 4.5 * m[1]) == 1.2140 and r(m[1]) == 1.2140
-assert r(expit(m[0] + 4.5 * m[1])) == 0.7710
-assert r(expit(m[0] + 2.5 * m[1])) == 0.2290
+# Contoh Soal 7.1: peluang titik baru
+assert r(expit(m @ [1, 4, 1])) == 0.75 and r(expit(m @ [1, 2, 0])) == 0.5
 
-# Contoh Soal 7.2: informasi dan kovarians
+# Contoh Soal 7.2: informasi Fisher dan kovarians lewat 16 I
+I16 = np.array([[20, 72, 32], [72, 314, 152], [32, 152, 82]])
 p = expit(X @ m)
-d = p * (1 - p)
-assert [r(v) for v in d[:3]] == [0.0438, 0.1199, 0.2283]
-I = X.T @ (X * d[:, None])
-assert [r(v) for v in I.ravel()] == [0.7840, 2.7439, 2.7439, 10.8042]
-det = I[0, 0] * I[1, 1] - I[0, 1] ** 2
-assert r(det) == 0.9413
-C = kovarians(m, X)
-assert [r(v) for v in C.ravel()] == [11.4775, -2.9148, -2.9148, 0.8328]
-assert (r(np.sqrt(C[0, 0])), r(np.sqrt(C[1, 1]))) == (3.3879, 0.9126)
+assert np.allclose(16 * X.T @ (X * (p * (1 - p))[:, None]), I16)
+c11 = 314 * 82 - 152 ** 2
+c12 = -(72 * 82 - 152 * 32)
+c13 = 72 * 152 - 314 * 32
+assert (c11, c12, c13) == (2644, -1040, 896)
+det16 = 20 * c11 + 72 * c12 + 32 * c13
+assert det16 == 6672 == 16 * 417
+adj = np.array([[2644, -1040, 896], [-1040, 616, -736], [896, -736, 1096]])
+assert np.allclose(I16 @ adj, det16 * np.eye(3))
+assert np.allclose(kovarians(m, X), adj / 417)
+assert [r(np.sqrt(v / 417)) for v in (2644, 616, 1096)] == [2.5180, 1.2154,
+                                                            1.6212]
 
-# Contoh Soal 7.3: metode delta di x0 = 5
-v = np.array([1.0, 5.0])
-var = v @ C @ v
-assert r(var) == 3.1494 and r(np.sqrt(var)) == 1.7747
-assert r(C[0, 0] + 25 * C[1, 1] + 10 * C[0, 1]) == 3.1494
-z0 = m[0] + 5 * m[1]
-assert r(z0) == 1.8210
-lo, hi = z0 - 1.96 * np.sqrt(var), z0 + 1.96 * np.sqrt(var)
-assert (r(lo), r(hi)) == (-1.6573, 5.2994)
-assert (r(expit(lo)), r(expit(hi))) == (0.1601, 0.9950)
+# Contoh Soal 7.3: metode delta di (4, 1)
+x0 = np.array([1, 4, 1])
+assert x0 @ adj @ x0 == 1180
+assert 2644 + 16 * 616 + 1096 + 2 * 4 * -1040 + 2 * 896 + 2 * 4 * -736 == 1180
+var = 1180 / 417
+assert (r(var), r(np.sqrt(var))) == (2.8297, 1.6822)
+lo, hi = np.log(3) - 1.96 * np.sqrt(var), np.log(3) + 1.96 * np.sqrt(var)
+assert (r(lo), r(hi)) == (-2.1985, 4.3957)
+assert (r(expit(lo)), r(expit(hi))) == (0.0999, 0.9878)
 
-# Contoh Soal 7.4: selang simetris di skala peluang keluar dari [0, 1]
-p0 = expit(z0)
-setengah = 1.96 * p0 * (1 - p0) * np.sqrt(var)
-assert (r(p0), r(p0 * (1 - p0)), r(setengah)) == (0.8607, 0.1199, 0.4171)
-assert (r(p0 - setengah), r(p0 + setengah)) == (0.4436, 1.2777)
+# Contoh Soal 7.4: selang simetris keluar dari [0, 1]
+se_p = 0.1875 * np.sqrt(var)
+assert r(se_p) == 0.3154 and r(1.96 * se_p) == 0.6182
+assert (r(0.75 - 1.96 * se_p), r(0.75 + 1.96 * se_p)) == (0.1318, 1.3682)
 
-# Contoh Soal 7.5: ambang dan jam belajar minimum
-assert r(logit(0.3)) == -0.8473
-assert r((logit(0.3) - m[0]) / m[1]) == 2.8021
+# Contoh Soal 7.5: garis batas untuk ambang t
+assert r(logit(0.25)) == -1.0986
+assert r(2 + logit(0.25) / np.log(3)) == 1.0
 
 # Contoh Soal 7.6: ambang dari biaya
-assert 1 / (1 + 4) == 0.2
-assert r(logit(0.2)) == -1.3863 and r((logit(0.2) - m[0]) / m[1]) == 2.3581
+assert 1 / (1 + 4) == 0.2 and r(logit(0.2)) == -1.3863
+assert r(2 + logit(0.2) / np.log(3)) == 0.7381
 print("Contoh Soal Bab 7: semua bilangan cocok")

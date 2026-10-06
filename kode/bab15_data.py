@@ -37,7 +37,8 @@ def baca_jantung():
 
 
 def rancangan(d):
-    """Matriks rancangan menurut protokol Bab 15.
+    """Matriks X (m x (n + 1), kolom pertama x0 = 1) dan y menurut
+    protokol Bab 15.
 
     Satuan: usia per 10 tahun, tensi per 10 mmHg, kolesterol per
     50 mg/dl, nadi maksimum per 10 denyut/menit. EKG digabung menjadi
@@ -63,7 +64,7 @@ def rancangan(d):
     nama = list(kol)
     X = np.column_stack([np.ones(len(d))] +
                         [np.asarray(v, dtype=float) for v in kol.values()])
-    return X, d.sakit.to_numpy(), ["intersep"] + nama
+    return X, d.sakit.to_numpy(), ["bias"] + nama
 
 
 if __name__ == "__main__":
@@ -76,5 +77,5 @@ if __name__ == "__main__":
         t = d.groupby(k).sakit.agg(["count", "mean"]).round(3)
         print(f"{k}:")
         for nama, baris in t.iterrows():
-            print(f"    {nama:16s} n = {int(baris['count']):3d}, "
+            print(f"    {nama:16s} m = {int(baris['count']):3d}, "
                   f"proporsi sakit {baris['mean']:.3f}")

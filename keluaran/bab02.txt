@@ -2,15 +2,17 @@
 # Diperiksa oleh periksa.py terhadap kode/bab02_*.py.
 
 === blok 1 ===
-(1) loss per titik dan log-loss rata-rata L:
-    theta = (0, 0)       L = 0.6931
+(1) loss per sampel dan log-loss rata-rata L:
+    w = (0, 0, 0)     L = 0.6931
       0.6931 0.6931 0.6931 0.6931 0.6931 0.6931
-    theta = (-2.8, 0.8)  L = 0.4344
-      0.1269 0.2633 0.9130 0.9130 0.2633 0.1269
-    theta = MLE          L = 0.4130
-      0.0470 0.1500 1.0420 1.0420 0.1500 0.0470
-    sklearn log_loss di (-2.8, 0.8): 0.4344
-    log-kemungkinan di (-2.8, 0.8):  -2.6065
+    w = (-2, 1, -1)   L = 0.6066
+      0.3133 0.3133 0.3133 0.6931 0.6931 1.3133
+    w = MLE           L = 0.6059
+      0.2877 0.2877 0.2877 0.6931 0.6931 1.3863
+    sklearn log_loss di (-2, 1, -1): 0.6066
+    log-kemungkinan di (-2, 1, -1):  -3.6393
+    log-kemungkinan di MLE:          -3.6356
+    3 ln 3 - 10 ln 2 =               -3.6356
 
 === blok 2 ===
 (2) menghitung untuk skor besar (y = 0):

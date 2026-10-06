@@ -3,25 +3,30 @@
 
 === blok 1 ===
 (1) gradien dan Hessian (rata-rata):
-    theta = (0, 0)
-      g = (  0.0000,  -0.5833)
-      H = [[0.2500, 0.8750], [0.8750, 3.7917]]
-      nilai eigen H: 0.0456, 3.9960
-    theta = (-2.8, 0.8)
-      g = (  0.0000,  -0.1153)
-      H = [[0.1744, 0.6103], [0.6103, 2.5084]]
-      nilai eigen H: 0.0244, 2.6583
-    theta = MLE
-      g = (  0.0000,   0.0000)
-      H = [[0.1307, 0.4573], [0.4573, 1.8007]]
-      nilai eigen H: 0.0136, 1.9177
-(2) beda hingga di (-2.8, 0.8):
+    w = (0, 0, 0)
+      g =   0.0000  -0.2500  -0.0833
+      H =   0.2500   0.8750   0.3750
+            0.8750   3.7917   1.7917
+            0.3750   1.7917   0.9583
+      nilai eigen: 0.0255, 0.1190, 4.8555
+    w = (-2, 1, -1)
+      g =   0.0000  -0.0189  -0.0063
+      H =   0.2144   0.7682   0.3394
+            0.7682   3.3468   1.6137
+            0.3394   1.6137   0.8694
+      nilai eigen: 0.0203, 0.0961, 4.3141
+    w = MLE
+      g =   0.0000   0.0000   0.0000
+      H =   0.2083   0.7500   0.3333
+            0.7500   3.2708   1.5833
+            0.3333   1.5833   0.8542
+      nilai eigen: 0.0194, 0.0921, 4.2218
+(2) beda hingga di (-2, 1, -1):
     selisih gradien < 1e-8: True
     selisih Hessian < 1e-8: True
-    statsmodels: score = -n g dan hessian = -n H: True True
+    statsmodels: score = -m g dan hessian = -m H: True True
 
 === blok 2 ===
 (3) persamaan skor di MLE:
-    sum p = 3.000000, sum y = 3
-    sum x p = 14.000000, sum x y = 14
-    |b + 3.5 w| < 1e-6: True
+    X^T p = [ 3. 12.  5.]
+    X^T y = [ 3. 12.  5.]

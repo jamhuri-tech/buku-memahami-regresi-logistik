@@ -2,30 +2,38 @@
 # Diperiksa oleh periksa.py terhadap kode/bab10_*.py.
 
 === blok 1 ===
-(1) galat baku dan uji Wald untuk w:
-    SE(b) = 3.3879, SE(w) = 0.9126
-    z = 1.3303, z^2 = 1.7697, p = 0.1834
-    selang Wald w: (-0.5746, 3.0027), OR: (0.5629, 20.14)
+(1) uji Wald per bobot:
+    j     w_j      SE      z       p     selang 95%
+    0  -2.1972  2.5180  -0.8726  0.3829  (-7.1325, 2.7380)
+    1   1.0986  1.2154   0.9039  0.3660  (-1.2835, 3.4808)
+    2  -1.0986  1.6212  -0.6777  0.4980  (-4.2761, 2.0789)
+    Wald gabungan w1 = w2 = 0: W = 0.9052, p = 0.6360
 
 === blok 2 ===
-(2) uji rasio kemungkinan dan uji skor (H0: w = 0):
-    l = -2.4780, l0 = -4.1589, G = 3.3618, p = 0.0667
-    deviance = 4.9560, deviance nol = 8.3178
-    skor U = [0.  3.5], S = 2.8000, p = 0.0943
-    statsmodels: llr = 3.3618, llr_pvalue = 0.0667, z = 1.3303
+(2) rasio kemungkinan dan skor:
+    l = -3.6356, l0 = -4.1589
+    H0 w1 = w2 = 0: G = 1.0465, p = 0.5926
+    H0 w2 = 0: l(model x1) = -3.8950, G = 0.5188, p = 0.4714
+    H0 w1 = 0: l(model x2) = -4.1060, G = 0.9408, p = 0.3321
+    skor U = [0.  1.5 0.5], S = 1.0000, p = 0.6065
+    statsmodels: llr = 1.0465, llr_pvalue = 0.5926
 
 === blok 3 ===
-(3) selang profil w: (-0.0658, 4.1592), OR: (0.9363, 64.02)
+(3) selang profil 95%:
+    w1: (-1.0869, 4.4200), OR: (0.3373, 83.09)
+    w2: (-5.8454, 1.9142), OR: (0.0029, 6.78)
 
 === blok 4 ===
-(5) simulasi n = 30, w = 1, 1000 ulangan (1 terpisah):
+(5) simulasi m = 30, w1 = 1, 1000 ulangan (2 terpisah):
     selang 95%   cakupan  meleset bawah  meleset atas
-    Wald        0.977      0.001          0.022
-    profil      0.933      0.048          0.019
-    rata-rata MLE w = 1.218
+    Wald        0.966      0.002          0.032
+    profil      0.918      0.058          0.024
+    rata-rata MLE w1 = 1.358
 
 === blok 5 ===
-(4) AIC dan BIC:
-    model nol: AIC = 10.3178, BIC = 10.1095
-    model x  : AIC = 8.9560, BIC = 8.5395
-    statsmodels AIC = 8.9560, BIC = 8.5395
+(4) AIC dan BIC (k = banyaknya bobot):
+    nol      k = 1: AIC = 10.3178, BIC = 10.1095
+    x1       k = 2: AIC = 11.7900, BIC = 11.3735
+    x2       k = 2: AIC = 12.2121, BIC = 11.7956
+    x1 + x2  k = 3: AIC = 13.2713, BIC = 12.6465
+    statsmodels AIC = 13.2713, BIC = 12.6465

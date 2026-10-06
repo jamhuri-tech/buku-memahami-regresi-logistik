@@ -1,6 +1,7 @@
 """Bab 2: kemungkinan, log-kemungkinan, dan log-loss.
 
-Fungsi log_loss di sini dipakai lagi di bab-bab berikutnya.
+Fungsi loss_titik dan log_loss di sini dipakai lagi di bab-bab
+berikutnya. Bobot w = (w0, w1, ..., wn); X memuat kolom x0 = 1.
 """
 import numpy as np
 from scipy.special import expit
@@ -14,25 +15,30 @@ def loss_titik(z, y):
     return np.logaddexp(0, z) - y * z
 
 
-def log_loss(theta, X, y):
-    """Log-loss rata-rata L(theta) = -ell(theta) / n."""
-    return np.mean(loss_titik(X @ theta, y))
+def log_loss(w, X, y):
+    """Log-loss rata-rata L(w) = -ell(w) / m."""
+    return np.mean(loss_titik(X @ w, y))
 
 
 if __name__ == "__main__":
-    x, y = data_mini()
-    X = rancang(x)
-    print("(1) loss per titik dan log-loss rata-rata L:")
-    for nama, th in [("theta = (0, 0)", np.zeros(2)),
-                     ("theta = (-2.8, 0.8)", np.array([-2.8, 0.8])),
-                     ("theta = MLE", mle_mini())]:
-        lt = loss_titik(X @ th, y)
-        print(f"    {nama:<20} L = {lt.mean():.4f}")
+    Xf, y = data_mini()
+    X = rancang(Xf)
+    print("(1) loss per sampel dan log-loss rata-rata L:")
+    for nama, w in [("w = (0, 0, 0)", np.zeros(3)),
+                    ("w = (-2, 1, -1)", np.array([-2.0, 1.0, -1.0])),
+                    ("w = MLE", mle_mini())]:
+        lt = loss_titik(X @ w, y)
+        print(f"    {nama:<17} L = {lt.mean():.4f}")
         print("      " + " ".join(f"{v:.4f}" for v in lt))
-    p = expit(X @ np.array([-2.8, 0.8]))
-    print(f"    sklearn log_loss di (-2.8, 0.8): {sk_log_loss(y, p):.4f}")
-    print(f"    log-kemungkinan di (-2.8, 0.8):  "
-          f"{-6 * log_loss(np.array([-2.8, 0.8]), X, y):.4f}")
+    w = np.array([-2.0, 1.0, -1.0])
+    print(f"    sklearn log_loss di (-2, 1, -1): "
+          f"{sk_log_loss(y, expit(X @ w)):.4f}")
+    print(f"    log-kemungkinan di (-2, 1, -1):  "
+          f"{-6 * log_loss(w, X, y):.4f}")
+    print(f"    log-kemungkinan di MLE:          "
+          f"{-6 * log_loss(mle_mini(), X, y):.4f}")
+    print(f"    3 ln 3 - 10 ln 2 =               "
+          f"{3 * np.log(3) - 10 * np.log(2):.4f}")
 
     print("(2) menghitung untuk skor besar (y = 0):")
     with np.errstate(over="ignore", divide="ignore"):

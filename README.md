@@ -4,8 +4,10 @@ Repositori pendamping buku **_Memahami Regresi Logistik: Dari Data
 sampai Inferensi, Langkah demi Langkah_** (Edisi Pertama, 2026) oleh
 Mohammad Jamhuri, seri *Memahami*.
 
-Buku ini memakai satu **data mini** (enam mahasiswa, jam belajar
-1-6, lulus 0, 0, 1, 0, 1, 1) dari awal sampai akhir: setiap skor,
+Buku ini memakai satu **data mini** dari awal sampai akhir: enam
+mahasiswa dengan dua fitur, jam belajar x1 = 1, ..., 6 dan banyak absen
+x2 = 0, 1, 0, 2, 3, 3, serta target lulus y = 0, 0, 1, 1, 1, 0. MLE-nya
+tepat w = ln 3 * (-2, 1, -1). Setiap skor,
 peluang, loss, gradien, Hessian, langkah gradient descent dan Newton,
 ukuran performa, galat baku, dan uji dihitung tangan di buku lalu
 diperiksa oleh kode di sini. File `kode/babNN_contoh.py` memeriksa

@@ -2,31 +2,39 @@
 # Diperiksa oleh periksa.py terhadap kode/bab12_*.py.
 
 === blok 1 ===
-(1) diagnostik titik (data mini):
+(1) diagnostik per sampel (data mini):
      i  Pearson  deviance  leverage   Cook
-     1  -0.2193   -0.3064   0.2836   0.0133
-     2  -0.4023   -0.5478   0.3776   0.0789
-     3   1.3546    1.4436   0.3388   0.7109
-     4  -1.3546   -1.4436   0.3388   0.7109
-     5   0.4023    0.5478   0.3776   0.0789
-     6   0.2193    0.3064   0.2836   0.0133
-    sum Pearson^2 = 4.0897, sum deviance^2 = 4.9560
-    sum leverage = 2.0000
+     1  -0.5774   -0.7585   0.5306   0.2675
+     2  -0.5774   -0.7585   0.4011   0.1242
+     3   0.5774    0.7585   0.8759   6.3192
+     4   1.0000    1.1774   0.2230   0.1231
+     5   1.0000    1.1774   0.4820   0.5988
+     6  -1.7321   -1.6651   0.4874   1.8550
+    sum Pearson^2 = 6.0000, sum deviance^2 = 7.2713
+    sum leverage = 3.0000
     sama dengan statsmodels: True True
 
 === blok 2 ===
 (2) dfbeta: satu langkah lawan buang-satu yang eksak:
-    i = 1: (-0.5482,  0.1333)  (-0.5101,  0.1236)
-    i = 2: (-1.2642,  0.2796)  (-1.0200,  0.2214)
-    i = 3: ( 2.6753, -0.4076)  data terpisah: MLE tidak ada
-    i = 4: ( 0.1780, -0.4076)  data terpisah: MLE tidak ada
-    i = 5: (-0.6931,  0.2796)  (-0.5295,  0.2214)
-    i = 6: (-0.3849,  0.1333)  (-0.3551,  0.1236)
+    i = 1: (-2.0485,  0.5415, -0.2043)
+           (-1.7480,  0.4250, -0.1044)  eksak
+    i = 2: (-1.4615,  0.5445, -0.5205)
+           (-1.2926,  0.4899, -0.4831)  eksak
+    i = 3: (-2.2995,  3.9034, -6.3382)  terpisah
+    i = 4: ( 0.4259, -0.0741,  0.2222)
+           ( 0.5534, -0.1259,  0.2682)  eksak
+    i = 5: ( 0.3056, -0.3889,  1.1667)
+           ( 0.6577, -0.6535,  1.5135)  eksak
+    i = 6: ( 3.1860, -1.5719,  0.8140)  terpisah
 
 === blok 3 ===
-(3) Box-Tidwell (suku x log x): G = 0.0175, p = 0.8948
-(4) data sintetis n = 1000 (x1, x2 berkorelasi 0.9):
-    VIF: [5.01 5.01 1.  ]
-    x1 saja  : w1 = 1.5174, SE(w1) = 0.1167
-    x1 dan x2: w1 = 1.1910, SE(w1) = 0.2011
-    linearitas x3: G (suku x3^2) = 67.57, p < 1e-10
+(3) linearitas (suku tambahan, uji rasio kemungkinan):
+    x1^2     : data terpisah, MLE tidak ada
+    x1 log x1: data terpisah, MLE tidak ada
+    x2^2     : G = 0.2762, p = 0.5992
+    VIF data mini: [4.8897 4.8897]
+(4) data sintetis m = 1000 (x1, x2 berkorelasi 0.9):
+    VIF: [5.19 5.19 1.01]
+    x1 saja  : w1 = 1.5336, SE(w1) = 0.1145
+    x1 dan x2: w1 = 1.1287, SE(w1) = 0.1946
+    linearitas x3: G (suku x3^2) = 68.35, p < 1e-10

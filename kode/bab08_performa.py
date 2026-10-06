@@ -8,6 +8,12 @@ from sklearn import metrics
 from bab01_data import data_mini, mle_mini, rancang
 
 
+def peluang_mini():
+    """Peluang MLE data mini, dibulatkan agar seri tetap seri."""
+    X, y = data_mini()
+    return np.round(expit(rancang(X) @ mle_mini()), 12), y
+
+
 def kebingungan(y, p, t=0.5):
     """(TP, FP, TN, FN) untuk tebakan p >= t."""
     yh = p >= t
@@ -32,11 +38,14 @@ def auc_mw(y, s):
 
 
 def average_precision(y, s):
-    urut = np.argsort(-s, kind="stable")
-    yy = y[urut]
-    tp = np.cumsum(yy)
-    prec = tp / np.arange(1, len(yy) + 1)
-    return np.sum(prec * yy) / yy.sum()
+    """AP = jumlah (R_k - R_{k-1}) P_k atas ambang yang berbeda."""
+    ap, r_lama = 0.0, 0.0
+    for t in np.unique(s)[::-1]:
+        tp = np.sum((s >= t) & (y == 1))
+        prec, rec = tp / np.sum(s >= t), tp / y.sum()
+        ap += (rec - r_lama) * prec
+        r_lama = rec
+    return ap
 
 
 def brier(y, p):
@@ -45,31 +54,30 @@ def brier(y, p):
 
 def pseudo_r2(y, p):
     """McFadden, Cox-Snell, Nagelkerke, dan Tjur."""
-    n = len(y)
+    m = len(y)
     ll = np.sum(y * np.log(p) + (1 - y) * np.log(1 - p))
     yb = y.mean()
-    ll0 = n * (yb * np.log(yb) + (1 - yb) * np.log(1 - yb))
+    ll0 = m * (yb * np.log(yb) + (1 - yb) * np.log(1 - yb))
     mcf = 1 - ll / ll0
-    cs = 1 - np.exp(2 * (ll0 - ll) / n)
-    nag = cs / (1 - np.exp(2 * ll0 / n))
+    cs = 1 - np.exp(2 * (ll0 - ll) / m)
+    nag = cs / (1 - np.exp(2 * ll0 / m))
     tjur = p[y == 1].mean() - p[y == 0].mean()
     return mcf, cs, nag, tjur
 
 
 if __name__ == "__main__":
-    x, y = data_mini()
-    p = expit(rancang(x) @ mle_mini())
+    p, y = peluang_mini()
     print("(1) matriks kebingungan dan ukuran ambang:")
-    print("     t    TP FP TN FN   akurasi  prec   recall  spes   F1")
-    for t in [0.5, 0.3]:
+    print("     t    TP FP TN FN  akurasi  prec   recall  spes   F1")
+    for t in [0.5, 0.7]:
         k = kebingungan(y, p, t)
         u = ukuran(*k)
-        print(f"    {t:.1f}   {k[0]}  {k[1]}  {k[2]}  {k[3]}    "
+        print(f"    {t:.1f}   {k[0]}  {k[1]}  {k[2]}  {k[3]}   "
               + "  ".join(f"{v:.4f}" for v in u))
     yh = (p >= 0.5).astype(int)
     print("    sklearn sama:",
-          np.isclose(metrics.accuracy_score(y, yh), 4 / 6),
-          np.isclose(metrics.f1_score(y, yh), 2 / 3))
+          np.isclose(metrics.accuracy_score(y, yh), 5 / 6),
+          np.isclose(metrics.f1_score(y, yh), 6 / 7))
 
     print("(2) ROC dan AUC:")
     fpr, tpr, ambang = metrics.roc_curve(y, p)

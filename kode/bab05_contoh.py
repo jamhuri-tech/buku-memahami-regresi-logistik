@@ -1,5 +1,6 @@
 """Memeriksa setiap bilangan Contoh Soal Bab 5."""
 import numpy as np
+from scipy.special import expit
 
 from bab01_data import data_mini, mle_mini, rancang
 from bab02_loss import log_loss
@@ -11,53 +12,57 @@ def r(v, n=4):
     return round(float(v), n)
 
 
-x, y = data_mini()
-X = rancang(x)
+Xf, y = data_mini()
+X = rancang(Xf)
 m = mle_mini()
+v = np.array([-2.0, 1.0, -1.0])
 
-# Contoh Soal 5.2: langkah Newton pertama, eksak
-Hinv = 24 / 105 * np.array([[91, -21], [-21, 6]])
-assert np.allclose(Hinv, np.linalg.inv(hessian(np.zeros(2), X, y)))
-g0 = np.array([0, -7 / 12])
-assert np.allclose(Hinv @ g0, [2.8, -0.8])
-assert np.allclose(newton(X, y, langkah=1)[0][1], [-2.8, 0.8])
+# Contoh Soal 5.2: langkah Newton pertama dengan eliminasi
+assert list(X.T @ (4 * y - 2)) == [0, 6, 2]
+# baris 1: a = -3.5 b - 1.5 c; sisa sistem 2 x 2
+assert (21 * -3.5 + 91, 21 * -1.5 + 43) == (17.5, 11.5)
+assert (9 * -3.5 + 43, 9 * -1.5 + 23) == (11.5, 9.5)
+assert 17.5 * 9.5 - 11.5 ** 2 == 34
+assert ((6 * 9.5 - 11.5 * 2) / 34, (17.5 * 2 - 11.5 * 6) / 34) == (1, -1)
+assert -3.5 * 1 - 1.5 * -1 == -2
+assert np.allclose(newton(X, y, langkah=1)[0][1], v)
 
-# Contoh Soal 5.3: langkah kedua dengan angka empat desimal
-H = np.array([[0.1744, 0.6103], [0.6103, 2.5084]])
-g = np.array([0.0, -0.1153])
-det = H[0, 0] * H[1, 1] - H[0, 1] ** 2
-assert (r(H[0, 0] * H[1, 1]), r(H[0, 1] ** 2), r(det)) == (0.4375, 0.3725,
-                                                          0.0650)
-v = np.array([[2.5084, -0.6103], [-0.6103, 0.1744]]) @ g
-assert (r(v[0]), r(v[1])) == (0.0704, -0.0201)
-t2 = np.array([-2.8, 0.8]) - v / det
-assert (r(t2[0]), r(t2[1])) == (-3.8826, 1.1094)
-j, _ = newton(X, y, langkah=2)
-assert (r(j[2][0]), r(j[2][1])) == (-3.8842, 1.1098)
+# Contoh Soal 5.3: langkah kedua sepanjang garis c v
+g, H = gradien(v, X, y), hessian(v, X, y)
+d1 = expit(1) * expit(-1)
+assert r(d1) == 0.1966
+assert r(v @ g) == -0.0126 and np.isclose(v @ g, (6 * expit(1) - 4.5 - (2 * expit(1) - 1.5)) / 6 * 1)
+assert np.isclose(v @ H @ v, 4 * d1 / 6) and r(v @ H @ v) == 0.1311
+c2 = 1 - (v @ g) / (v @ H @ v)
+assert r(c2) == 1.0963
+assert np.allclose(newton(X, y, langkah=2)[0][2], c2 * v)
 
-# Contoh Soal 5.4: IRLS langkah pertama
-r0 = (y - 0.5) / 0.25
-assert list(r0) == [-2, -2, 2, -2, 2, 2]
-xc = x - 3.5
-assert (xc * r0).sum() == 14 and (xc ** 2).sum() == 17.5
-assert np.allclose(irls(X, y, 1), [-2.8, 0.8])
+# Contoh Soal 5.4: MLE tepat c = ln 3
+for c in (0.5, 1.0, np.log(3)):
+    k = X @ v
+    turunan = k @ (expit(c * k) - y)
+    assert np.isclose(turunan, 2 * (2 * expit(c) - 1) - 1)
+assert np.isclose(expit(np.log(3)), 0.75)
 
-# Contoh Soal 5.5: konvergensi kuadratik
+# Contoh Soal 5.5: IRLS langkah pertama
+assert list(4 * y - 2) == [-2, -2, 2, 2, 2, -2]
+assert np.allclose(irls(X, y, 1), v)
+
+# Contoh Soal 5.6: konvergensi kuadratik
 j, _ = newton(X, y, langkah=8)
-e = [np.abs(t - m).max() for t in j]
-assert [float(f"{v:.1e}") for v in e[3:6]] == [2.8e-2, 1.7e-4, 6.1e-9]
-assert (r(e[4] / e[3] ** 2, 2), r(e[5] / e[4] ** 2, 2)) == (0.22, 0.22)
+e = [np.abs(w - m).max() for w in j]
+assert (r(e[1]), float(f"{e[2]:.1e}"), float(f"{e[3]:.1e}")) == (0.1972,
+                                                                4.5e-3,
+                                                                2.6e-6)
+assert (r(e[2] / e[1] ** 2, 3), r(e[3] / e[2] ** 2, 3)) == (0.117, 0.125)
 
-# Contoh Soal 5.6: pencarian garis Armijo dari (-6, 3)
-th = np.array([-6.0, 3.0])
-g, H = gradien(th, X, y), hessian(th, X, y)
+# Contoh Soal 5.7: Armijo dari (-6, 2, -2)
+w = np.array([-6.0, 2.0, -2.0])
+g, H = gradien(w, X, y), hessian(w, X, y)
 s = -np.linalg.solve(H, g)
-assert (r(s[0], 2), r(s[1], 2)) == (32.95, -18.52)
-assert r(g @ s) == -6.8808 and r(log_loss(th, X, y)) == 1.1322
-nilai = [r(log_loss(th + t * s, X, y)) for t in (1, 0.5, 0.25, 0.125)]
-assert nilai == [24.6369, 10.0899, 2.9214, 0.4754]
-tt = 0.125
-assert log_loss(th + tt * s, X, y) <= log_loss(th, X, y) + 1e-4 * tt * (
-    g @ s)
-assert np.allclose(th + 0.125 * s, [-1.8807, 0.6855], atol=5e-5)
+assert [r(t, 2) for t in s] == [14.19, -4.33, 4.02] and r(g @ s) == -1.4210
+assert r(log_loss(w, X, y)) == 0.9461
+assert (r(log_loss(w + s, X, y)), r(log_loss(w + 0.5 * s, X, y))) == (2.1119,
+                                                                    0.7775)
+assert log_loss(w + 0.5 * s, X, y) <= log_loss(w, X, y) + 1e-4 * 0.5 * (g @ s)
 print("Contoh Soal Bab 5: semua bilangan cocok")

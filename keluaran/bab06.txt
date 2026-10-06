@@ -2,39 +2,39 @@
 # Diperiksa oleh periksa.py terhadap kode/bab06_*.py.
 
 === blok 1 ===
-(1) data terpisah y = (0,0,0,1,1,1), L(t v), v = (-3.5, 1):
+(1) data terpisah y = (0,0,0,1,1,1), L(t v), v = (-3.5, 1, 0):
     t =  1: L = 0.251460
     t =  2: L = 0.122855
     t =  5: L = 0.026482
     t = 10: L = 0.002239
     t = 20: L = 0.000015
-    Newton langkah  5: w = 6.54
-    Newton langkah 10: w = 16.64
-    Newton langkah 15: w = 26.64
+    Newton langkah  5: |w| = 13.8
+    Newton langkah 10: |w| = 29.5
+    Newton langkah 15: |w| = 45.2
     peringatan statsmodels:
       ConvergenceWarning
       PerfectSeparationWarning
-    statsmodels |w| > 10: True
 
 === blok 2 ===
-(2) penalti L2, lam = 1/(nC), dibandingkan dengan sklearn:
-    C = 10.0 mini      b = -3.9424, w = 1.1264, sama: True
-    C = 10.0 terpisah  b = -9.3618, w = 2.6748, sama: True
-    C =  1.0 mini      b = -2.6847, w = 0.7671, sama: True
-    C =  1.0 terpisah  b = -3.9221, w = 1.1206, sama: True
-    C =  0.1 mini      b = -0.8586, w = 0.2453, sama: True
-    C =  0.1 terpisah  b = -1.1091, w = 0.3169, sama: True
+(2) penalti L2, lam = 1/(mC), dibandingkan dengan sklearn:
+    C = 10.0 mini     w = (-1.8368, 0.8529, -0.7688) True
+    C = 10.0 terpisah w = (-7.9543, 1.6924,  1.6748) True
+    C =  1.0 mini     w = (-1.0626, 0.3734, -0.1635) True
+    C =  1.0 terpisah w = (-3.9336, 0.8244,  0.7557) True
+    C =  0.1 mini     w = (-0.3794, 0.1011,  0.0170) True
+    C =  0.1 terpisah w = (-1.3024, 0.2765,  0.2250) True
 
 === blok 3 ===
 (3) penalti L1:
-    lam_maks = |g_w(model nol)| = 0.5833
-    C_min = 1/(n lam_maks) = 0.2857
-    lam = 0.7: b =  0.0000, w = 0.0000, saga sama: True
-    lam = 0.5: b = -0.4022, w = 0.1149, saga sama: True
-    lam = 0.1: b = -2.9482, w = 0.8423, saga sama: True
+    g(model nol) = [ 0.     -0.25   -0.0833]
+    lam_maks = 0.2500
+    lam = 0.30: w = ( 0.0000, 0.0000,  0.0000) True
+    lam = 0.20: w = (-0.2405, 0.0687,  0.0000) True
+    lam = 0.10: w = (-0.7332, 0.2095,  0.0000) True
+    lam = 0.02: w = (-1.6760, 0.7423, -0.6180) True
 
 === blok 4 ===
 (4) Firth pada data terpisah:
-    b = -3.9512, w = 1.1289, x50 = 3.5000
+    w = (-2.6608, 0.5302, 0.6689)
     skor termodifikasi nol: True
-    peluang: [0.0561 0.1553 0.3625 0.6375 0.8447 0.9439]
+    peluang: [0.1062 0.2826 0.2554 0.6895 0.8805 0.926 ]

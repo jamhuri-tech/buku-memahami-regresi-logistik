@@ -1,5 +1,5 @@
 """Bab 13: kestabilan dan validasi -- validasi silang berulang,
-bootstrap, koreksi optimisme, stabilitas seleksi peubah, uji DeLong,
+bootstrap, koreksi optimisme, stabilitas seleksi fitur, uji DeLong,
 dan ukuran sampel. Fungsi-fungsi di sini dipakai lagi di Bab 15.
 """
 import warnings
@@ -10,7 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 
-from bab01_data import BENIH, data_mini, mle_mini, rancang
+from bab01_data import BENIH
+from bab08_performa import peluang_mini
 from bab09_kalibrasi import data_sintetis
 
 
@@ -22,30 +23,32 @@ def model_mle():
 def komponen_delong(y, s):
     """V10 (per positif) dan V01 (per negatif)."""
     pos, neg = s[y == 1], s[y == 0]
-    psi = (pos[:, None] > neg[None, :]) + 0.5 * (pos[:, None] == neg[None, :])
+    psi = ((pos[:, None] > neg[None, :])
+           + 0.5 * (pos[:, None] == neg[None, :]))
     return psi.mean(1), psi.mean(0)
 
 
 def delong(y, s1, s2=None):
     """AUC, SE, dan (bila s2 diberikan) uji selisih AUC."""
-    n1, n0 = (y == 1).sum(), (y == 0).sum()
+    m1, m0 = (y == 1).sum(), (y == 0).sum()
     a10, a01 = komponen_delong(y, s1)
     auc1 = a10.mean()
     if s2 is None:
-        var = np.var(a10, ddof=1) / n1 + np.var(a01, ddof=1) / n0
+        var = np.var(a10, ddof=1) / m1 + np.var(a01, ddof=1) / m0
         return auc1, np.sqrt(var)
     b10, b01 = komponen_delong(y, s2)
     S10 = np.cov(np.vstack([a10, b10]))
     S01 = np.cov(np.vstack([a01, b01]))
-    S = S10 / n1 + S01 / n0
+    S = S10 / m1 + S01 / m0
     d = auc1 - b10.mean()
     se = np.sqrt(S[0, 0] + S[1, 1] - 2 * S[0, 1])
     return auc1, b10.mean(), d, se, 2 * norm.sf(abs(d / se))
 
 
-def n_riley(p, r2cs, S=0.9):
-    """Ukuran sampel agar susut yang diharapkan paling kecil S."""
-    return p / ((S - 1) * np.log(1 - r2cs / S))
+def m_riley(n, r2cs, S=0.9):
+    """Banyak sampel agar susut yang diharapkan paling kecil S
+    (n = banyaknya fitur)."""
+    return n / ((S - 1) * np.log(1 - r2cs / S))
 
 
 if __name__ == "__main__":
@@ -55,7 +58,7 @@ if __name__ == "__main__":
     m = model_mle().fit(X, y)
     p = m.predict_proba(X)[:, 1]
     pu = m.predict_proba(Xu)[:, 1]
-    print("(1) model 20 peubah, n = 300:")
+    print("(1) model 20 fitur, m = 300:")
     print(f"    tampak (data latih): AUC = {roc_auc_score(y, p):.4f},"
           f" log-loss = {log_loss(y, p):.4f}")
     auc, ll = [], []
@@ -102,18 +105,17 @@ if __name__ == "__main__":
         pilih += ml.coef_[0] != 0
     print("(4) frekuensi terpilih L1 (C = 0.05) dalam 100 bootstrap:")
     print("    x1, x2, x3:", (pilih[:3] / 100).round(2))
-    print(f"    17 peubah noise: terbesar {pilih[3:].max() / 100:.2f},"
+    print(f"    17 fitur noise: terbesar {pilih[3:].max() / 100:.2f},"
           f" rata-rata {pilih[3:].mean() / 100:.2f}")
 
     m3 = model_mle().fit(X[:, :3], y)
     a, b, d, se, pv = delong(yu, m3.predict_proba(Xu[:, :3])[:, 1], pu)
-    print("(5) DeLong pada data uji, 3 peubah lawan 20 peubah:")
+    print("(5) DeLong pada data uji, 3 fitur lawan 20 fitur:")
     print(f"    AUC {a:.4f} lawan {b:.4f}, selisih {d:.4f}")
     teks = f"{pv:.1e}" if pv > 1e-10 else "< 1e-10"
     print(f"    SE selisih {se:.4f}, z = {d / se:.1f}, p {teks}")
-    x0, y0 = data_mini()
-    pm = 1 / (1 + np.exp(-(rancang(x0) @ mle_mini())))
+    pm, y0 = peluang_mini()
     a0, s0 = delong(y0, pm)
     print(f"    data mini: AUC = {a0:.4f}, SE DeLong = {s0:.4f}")
-    print(f"(6) n Riley (p = 10, R2_CS = 0.2, S = 0.9):"
-          f" {n_riley(10, 0.2):.1f}")
+    print(f"(6) m Riley (n = 10, R2_CS = 0.2, S = 0.9):"
+          f" {m_riley(10, 0.2):.1f}")

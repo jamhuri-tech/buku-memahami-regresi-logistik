@@ -1,57 +1,65 @@
 """Memeriksa setiap bilangan Contoh Soal Bab 12."""
+from fractions import Fraction as F
+
 import numpy as np
 from scipy.special import expit
-from scipy.stats import chi2
 
 from bab01_data import data_mini, mle_mini, rancang
-from bab07_prediksi import kovarians
-from bab10_inferensi import mle
-from bab12_diagnostik import cook, leverage, residu
+from bab10_inferensi import mle, terpisah
+from bab12_diagnostik import cook, leverage, residu, vif
 
 
 def r(v, n=4):
     return round(float(v), n)
 
 
-x, y = data_mini()
-X = rancang(x)
+Xf, y = data_mini()
+X = rancang(Xf)
 m = mle_mini()
 p = expit(X @ m)
 rp, rd = residu(y, p)
+ADJ = np.array([[2644, -1040, 896], [-1040, 616, -736],
+                [896, -736, 1096]])
 
-# Contoh Soal 12.1: residu mahasiswa ke-3
-assert (r(1 - p[2]), r(np.sqrt(p[2] * (1 - p[2])))) == (0.6473, 0.4778)
-assert r(rp[2]) == 1.3546 and r(0.6473 / 0.4778) == 1.3548
-assert r(np.log(p[2])) == -1.0420 and r(rd[2]) == 1.4436
-assert r(np.sqrt(2 * 1.0420)) == 1.4436
+# Contoh Soal 12.1: residu mahasiswa ke-6 dan jumlah kuadrat
+assert r(rp[5]) == r(-np.sqrt(3)) == -1.7321
+assert r(rd[5]) == r(-np.sqrt(2 * np.log(4))) == -1.6651
+assert r(2 * np.log(4)) == 2.7726
+assert r((rp ** 2).sum()) == 6.0
+assert F(1, 3) * 3 + 1 + 1 + 3 == 6
+assert np.isclose((rd ** 2).sum(), 20 * np.log(2) - 6 * np.log(3))
+assert r((rd ** 2).sum()) == 7.2713
 
-# Contoh Soal 12.2: jumlah kuadrat residu
-assert r((rd ** 2).sum()) == 4.9560 and r((rp ** 2).sum()) == 4.0897
-
-# Contoh Soal 12.3: leverage mahasiswa ke-3
-C = kovarians(m, X)
-q = np.array([1, 3.0]) @ C @ np.array([1, 3.0])
-assert r(q) == 1.4838
-assert r(11.4775 + 9 * 0.8328 + 6 * -2.9148) == 1.4839
+# Contoh Soal 12.2: leverage dan Cook mahasiswa ke-3
+x3 = X[2]
+assert x3 @ ADJ @ x3 == 1948 == 2644 + 9 * 616 - 6 * 1040
 h, _ = leverage(X, p)
-assert r(h[2]) == 0.3388 and r(0.2283 * 1.4839) == 0.3388
+assert F(3, 16) * F(1948, 417) == F(487, 556) and r(h[2]) == 0.8759
+assert r(F(487, 556)) == 0.8759
+D3 = F(1, 3) * F(487, 556) / (3 * (1 - F(487, 556)) ** 2)
+assert D3 == F(270772, 42849) and r(D3) == 6.3192
+assert r(cook(y, p, h, 3)[2]) == 6.3192
+assert r(h.sum()) == 3.0
+q = [xi @ ADJ @ xi for xi in X]
+assert q == [1180, 892, 1948, 372, 804, 1084]
 
-# Contoh Soal 12.4: jarak Cook
-assert r(rp[2] ** 2) == 1.8349
-assert r(cook(y, p, h, 2)[2]) == 0.7109
-assert r(1.8349 * 0.3388 / (2 * (1 - 0.3388) ** 2)) == 0.7110
+# Contoh Soal 12.3: dfbeta mahasiswa ke-4
+x4 = X[3]
+assert list(ADJ @ x4) == [276, -48, 144]
+assert F(372, 1668) == 1 - F(108, 139) and 1668 == 4 * 417
+satu = [F(v, 648) for v in (276, -48, 144)]
+assert satu == [F(23, 54), F(-2, 27), F(2, 9)]
+assert [r(v) for v in satu] == [0.4259, -0.0741, 0.2222]
+k = np.arange(6) != 3
+t = m - mle(X[k], y[k])
+assert [r(v) for v in t] == [0.5534, -0.1259, 0.2682]
+assert terpisah(X[np.arange(6) != 2], y[np.arange(6) != 2])
+assert terpisah(X[np.arange(6) != 5], y[np.arange(6) != 5])
 
-# Contoh Soal 12.5: dfbeta satu langkah lawan eksak, titik 1
-satu = C @ X[0] * (y[0] - p[0]) / (1 - h[0])
-assert (r(satu[0]), r(satu[1])) == (-0.5482, 0.1333)
-k = np.arange(6) != 0
-t = mle(X[k], y[k])
-assert (r(m[0] - t[0]), r(m[1] - t[1])) == (-0.5101, 0.1236)
-assert (r(t[0]), r(t[1])) == (-3.7390, 1.0904)
-
-# Contoh Soal 12.6: VIF teoretis
+# Contoh Soal 12.4: VIF data mini dan VIF teoretis
+assert F(35, 2) * F(19, 2) == F(16625, 100)
+assert 17.5 * 9.5 - 11.5 ** 2 == 34
+assert r(17.5 * 9.5 / 34) == 4.8897 and r(vif(Xf)[0]) == 4.8897
+assert r(np.sqrt(4.8897)) == 2.2113
 assert r(1 / (1 - 0.9 ** 2), 2) == 5.26 and r(np.sqrt(5.26), 2) == 2.29
-
-# Contoh Soal 12.7: Box-Tidwell
-assert r(chi2.sf(0.0175, 1)) == 0.8948
 print("Contoh Soal Bab 12: semua bilangan cocok")
